@@ -16,7 +16,7 @@ export default function Navbar() {
         {/* Links */}
         <div className="hidden md:flex gap-6 text-sm font-medium">
         
-          <Link href="/auth/login" className="hover:text-[var(--accent)]">
+          <Link href="../../auth/login" className="hover:text-[var(--accent)]">
             Login
           </Link>
           <Link href="/rides/request" className="hover:text-[var(--accent)]">

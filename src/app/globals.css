@@ -62,7 +62,28 @@ body {
 
 /* Custom utility for inputs */
 .input {
-  @apply w-full border border-gray-600 rounded-lg px-4 py-3 bg-[var(--card)] text-[var(--foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)];
+  @apply w-full px-4 py-2 rounded-lg border border-gray-600 bg-[var(--background)] text-[var(--foreground)] transition;
+}
+
+/* Use z-index + relative so focus ring isn't clipped by siblings/parent overflow */
+.input:focus,
+.input:focus-visible {
+  @apply outline-none ring-2 ring-[var(--accent)] border-[var(--accent)];
+  position: relative;
+  z-index: 10;
+}
+
+/* Make date/time icons visible on dark backgrounds */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* turn dark icon to light */
+  cursor: pointer;
+}
+
+/* Firefox (uses different pseudo) */
+input[type="date"]::-moz-focus-inner,
+input[type="time"]::-moz-focus-inner {
+  filter: invert(1);
 }
 
 .btn-primary {

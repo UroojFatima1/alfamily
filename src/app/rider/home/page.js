@@ -1,30 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
+import RideRequestModal from "../request/page";
 
 export default function RiderDashboard() {
-  const activeRequests = []; // empty = show "No Active Requests"
+  const [showRequest, setShowRequest] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const activeRequests = [];
   const pastRides = [
-    {
-      id: 1,
-      name: "Mike Wilson",
-      dept: "IT Department",
-      pickup: "Admin Building",
-      drop: "Bank Alfalah BA building",
-      time: "1:15 PM",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      name: "Mike Wilson",
-      dept: "IT Department",
-      pickup: "Admin Building",
-      drop: "Bank Alfalah BA building",
-      time: "1:15 PM",
-      status: "Completed",
-    },
+    { id: 1, name: "Mike Wilson", dept: "IT Department", pickup: "Admin Building", drop: "Bank Alfalah BA building", time: "1:15 PM", status: "Completed" },
+    { id: 2, name: "Mike Wilson", dept: "IT Department", pickup: "Admin Building", drop: "Bank Alfalah BA building", time: "1:15 PM", status: "Completed" },
   ];
 
   return (
@@ -32,6 +21,13 @@ export default function RiderDashboard() {
       <Navbar />
 
       <section className="max-w-5xl mx-auto px-6 py-10 w-full space-y-8">
+        {/* ✅ Success Message */}
+        {successMessage && (
+          <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md text-center">
+            {successMessage}
+          </div>
+        )}
+
         {/* Welcome */}
         <div className="bg-[var(--card)] rounded-2xl p-6 shadow-soft">
           <h2 className="text-2xl font-bold">
@@ -47,7 +43,10 @@ export default function RiderDashboard() {
 
         {/* Request a Ride Button */}
         <div className="flex justify-center">
-          <button className="btn-primary px-8 py-3 text-lg flex items-center gap-2">
+          <button
+            className="btn-primary px-8 py-3 text-lg flex items-center gap-2"
+            onClick={() => setShowRequest(true)}
+          >
             🚗 Request a Ride
           </button>
         </div>
@@ -84,6 +83,16 @@ export default function RiderDashboard() {
       </section>
 
       <Footer />
+
+      {/* Ride Request Modal */}
+      <RideRequestModal
+        isOpen={showRequest}
+        onClose={() => setShowRequest(false)}
+        onSuccess={() => {
+          setSuccessMessage("✅ Ride request created successfully!");
+          setTimeout(() => setSuccessMessage(""), 3000); // auto-hide in 3s
+        }}
+      />
     </main>
   );
 }
