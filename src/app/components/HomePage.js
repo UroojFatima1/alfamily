@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Car, User } from "lucide-react";
+import { Car, User, LogIn } from "lucide-react";
+import { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import LoginModal from "./LoginModal";
 
 export default function HomePage() {
   const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)]">
@@ -28,21 +31,30 @@ export default function HomePage() {
               rides, and make your daily commute smarter.
             </p>
 
-            <div className="flex gap-4 mt-6">
-                        <button
-            onClick={() => router.push("/auth/signup/driver")}
-            className="px-6 py-3 rounded-xl font-semibold bg-[var(--accent)] text-[var(--background)] hover:bg-yellow-400 transition flex items-center gap-2"
-            >
-            <Car className="w-5 h-5" /> Register as Driver
-            </button>
+            <div className="flex flex-wrap gap-4 mt-6">
+              {/* Driver Signup */}
+              <button
+                onClick={() => router.push("/auth/signup/driver")}
+                className="px-6 py-3 rounded-xl font-semibold bg-[var(--accent)] text-[var(--background)] hover:bg-yellow-400 transition flex items-center gap-2"
+              >
+                <Car className="w-5 h-5" /> Register as Driver
+              </button>
 
-            <button
-            onClick={() => router.push("/auth/signup/rider")}
-            className="px-6 py-3 rounded-xl font-semibold border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--background)] transition flex items-center gap-2"
-            >
-            <User className="w-5 h-5" /> Register as Rider
-            </button>
+              {/* Rider Signup */}
+              <button
+                onClick={() => router.push("/auth/signup/rider")}
+                className="px-6 py-3 rounded-xl font-semibold border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--background)] transition flex items-center gap-2"
+              >
+                <User className="w-5 h-5" /> Register as Rider
+              </button>
 
+              {/* Login Button */}
+              <button
+                onClick={() => setShowLogin(true)}
+                className="px-6 py-3 rounded-xl font-semibold border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--background)] transition flex items-center gap-2"
+              >
+                <LogIn className="w-5 h-5" /> Login
+              </button>
             </div>
           </div>
 
@@ -87,6 +99,9 @@ export default function HomePage() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Login Popup */}
+      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </main>
   );
 }
