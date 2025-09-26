@@ -48,13 +48,7 @@ export default function HomePage() {
                 <User className="w-5 h-5" /> Register as Rider
               </button>
 
-              {/* Login Button */}
-              <button
-                onClick={() => setShowLogin(true)}
-                className="px-6 py-3 rounded-xl font-semibold border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--background)] transition flex items-center gap-2"
-              >
-                <LogIn className="w-5 h-5" /> Login
-              </button>
+            
             </div>
           </div>
 
