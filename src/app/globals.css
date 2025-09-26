@@ -96,17 +96,17 @@ input[type="time"]::-moz-focus-inner {
 
 
 .logout-hover {
-  @apply text-red-500 hover:text-red-600; /* Tailwind utilities */
+  @apply text-red-500 hover:text-red-600; 
 }
 
 .logout-hover:hover {
-  color: #facc15; /* custom hex */
+  color: #facc15; 
 }
 .link-hover {
   @apply hover:text-[var(--primary)];
 }
 
 .link-hover:hover {
-  color: #facc15; /* custom yellow */
-  transition: color 0.2s ease-in-out; /* smooth fade */
+  color: #facc15; 
+  transition: color 0.2s ease-in-out; 
 }
