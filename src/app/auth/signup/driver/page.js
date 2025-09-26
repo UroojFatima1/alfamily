@@ -4,11 +4,16 @@ import { useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import OtpModal from "@/app/components/OtpModal";
+import Popup from "@/app/components/popup";
 
 export default function DriverSignup() {
   const [showOtp, setShowOtp] = useState(false);
   const [errors, setErrors] = useState({});
   const [loadingEmp, setLoadingEmp] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Popup state
+  const [popup, setPopup] = useState({ open: false, type: "info", message: "" });
 
   const [form, setForm] = useState({
     empid: "",
@@ -27,43 +32,12 @@ export default function DriverSignup() {
     acAvailable: false,
   });
 
+  // handle form change
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-
-    if (field === "empid" && value.length === 5) {
-      fetchEmployee(value);
-    }
   };
 
-  const fetchEmployee = async (id) => {
-    try {
-      setLoadingEmp(true);
-      setErrors((prev) => ({ ...prev, empid: "" }));
-
-      // Replace this with your real API
-      const res = await fetch(`/api/employees/${id}`);
-      const data = await res.json();
-
-      if (res.ok && data) {
-        setForm((prev) => ({
-          ...prev,
-          empid: id,
-          fullName: data.fullName || "",
-          email: data.email || "",
-          department: data.department || "",
-          designation: data.designation || "",
-        }));
-      } else {
-        setErrors((prev) => ({ ...prev, empid: "Employee not found" }));
-      }
-    } catch (err) {
-      setErrors((prev) => ({ ...prev, empid: "Error fetching employee" }));
-    } finally {
-      setLoadingEmp(false);
-    }
-  };
-
+  // validation
   const validate = () => {
     let newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,11 +73,49 @@ export default function DriverSignup() {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  // submit
+  const handleSubmit = async () => {
     const newErrors = validate();
     setErrors(newErrors);
+
     if (Object.keys(newErrors).length === 0) {
-      setShowOtp(true);
+      try {
+        setSubmitting(true);
+
+        const res = await fetch("https://alfamilys.vercel.app/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            role: "driver",
+            fullName: form.fullName,
+            email: form.email,
+            mobile: form.mobile,
+            department: form.department,
+            designation: form.designation,
+            password: form.password,
+            cnic: form.cnic,
+            vehicleType: form.vehicleType,
+            model: form.model,
+            registrationNumber: form.registration,
+            seatingCapacity: Number(form.seating),
+            willingToOfferRide: form.offerRide === "yes",
+            acAvailable: form.acAvailable,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setShowOtp(true);
+          setPopup({ open: true, type: "success", message: "Registered successfully!" });
+        } else {
+          setPopup({ open: true, type: "error", message: data.message || "Registration failed" });
+        }
+      } catch (err) {
+        setPopup({ open: true, type: "error", message: "Network error" });
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -157,7 +169,7 @@ export default function DriverSignup() {
               )}
             </div>
 
-            {/* Official Email */}
+            {/* Email */}
             <div>
               <input
                 type="email"
@@ -394,15 +406,26 @@ export default function DriverSignup() {
               type="button"
               className="btn-primary w-full"
               onClick={handleSubmit}
+              disabled={submitting}
             >
-              Continue
+              {submitting ? "Submitting..." : "Continue"}
             </button>
           </div>
         </div>
       </section>
 
       <Footer />
+
+      {/* OTP Modal */}
       <OtpModal isOpen={showOtp} onClose={() => setShowOtp(false)} />
+
+      {/* Popup */}
+      <Popup
+        isOpen={popup.open}
+        type={popup.type}
+        message={popup.message}
+        onClose={() => setPopup({ ...popup, open: false })}
+      />
     </main>
   );
 }

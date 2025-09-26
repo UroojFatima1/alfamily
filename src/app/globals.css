@@ -93,3 +93,20 @@ input[type="time"]::-moz-focus-inner {
 .btn-disabled {
   @apply w-full py-3 rounded-xl font-semibold bg-gray-600 text-gray-400 cursor-not-allowed;
 }
+
+
+.logout-hover {
+  @apply text-red-500 hover:text-red-600; /* Tailwind utilities */
+}
+
+.logout-hover:hover {
+  color: #facc15; /* custom hex */
+}
+.link-hover {
+  @apply hover:text-[var(--primary)];
+}
+
+.link-hover:hover {
+  color: #facc15; /* custom yellow */
+  transition: color 0.2s ease-in-out; /* smooth fade */
+}
