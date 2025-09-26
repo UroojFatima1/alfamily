@@ -1,4 +1,4 @@
-import Navbar from "@/app/components/Navbar";
+import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RoleSwitcher from "@/app/components/RoleSwitcher";
 import OverviewCard from "@/app/components/OverviewCard";
@@ -54,7 +54,7 @@ export default function RequestRide() {
 
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
-      <Navbar />
+      <GlobalNavbar />
 
       <section className="flex-1 px-6 py-8 space-y-10 max-w-6xl mx-auto w-full">
         {/* Greeting */}

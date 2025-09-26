@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/app/components/Navbar";
+import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
 
@@ -37,7 +37,7 @@ export default function DriverDashboard() {
 
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
-      <Navbar />
+      <GlobalNavbar/>
 
       <section className="max-w-5xl mx-auto px-6 py-10 w-full space-y-8">
         {/* Welcome */}
