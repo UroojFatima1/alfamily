@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Car, User } from "lucide-react";
 
-export default function RoleSwitcher() {
+export default function RoleSwitcher({ activeRole = "rider" }) {
   const router = useRouter();
-  const [selected, setSelected] = useState("rider"); // driver pre-selected
+  const [selected, setSelected] = useState(activeRole); // driver pre-selected
 
   const handleSelect = (role) => {
     setSelected(role);
