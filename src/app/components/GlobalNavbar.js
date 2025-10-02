@@ -39,7 +39,8 @@ export default function GlobalNavbar() {
           href={getPath("home")}
           className="text-lg font-bold text-[var(--accent)] link-hover"
         >
-          RAlFamily
+          <Car className="w-6 h-6 text-[var(--accent)]" />
+          <span className="font-bold text-lg">Alfamily</span>
         </Link>
 
         {/* Links only when logged in */}
