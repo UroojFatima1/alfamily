@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Car, User } from "lucide-react";
 
 export default function RoleSwitcher({ activeRole = "rider" }) {
@@ -9,7 +8,18 @@ export default function RoleSwitcher({ activeRole = "rider" }) {
 
   const handleSelect = (role) => {
     setSelected(role);
-    router.push(`/auth/signup?role=${role}`);
+    if (onRoleChange) onRoleChange(role);
+
+    if (role === "driver") {
+      // Scroll to driver form section
+      const driverSection = document.getElementById("driver-form");
+      if (driverSection) {
+        driverSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      // Just scroll to top for rider view
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
@@ -17,11 +27,8 @@ export default function RoleSwitcher({ activeRole = "rider" }) {
       {/* Heading */}
       <h4 className="text-lg font-semibold">Switch Role</h4>
 
-      {/* Role cards like OverviewCard */}
+      {/* Role Cards */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Driver */}
-       
-
         {/* Rider */}
         <button
           onClick={() => handleSelect("rider")}
@@ -38,7 +45,9 @@ export default function RoleSwitcher({ activeRole = "rider" }) {
             Request rides from colleagues
           </span>
         </button>
-         <button
+
+        {/* Driver */}
+        <button
           onClick={() => handleSelect("driver")}
           className={`rounded-xl p-5 flex flex-col items-center justify-center text-center border transition shadow-inner
             ${

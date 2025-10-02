@@ -9,12 +9,29 @@ import RideRequestModal from "../request/page";
 export default function RiderDashboard() {
   const [showRequest, setShowRequest] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [activeRequests, setActiveRequests] = useState([]); // ✅ now in state
 
-  const activeRequests = [];
   const pastRides = [
     { id: 1, name: "Mike Wilson", dept: "IT Department", pickup: "Admin Building", drop: "Bank Alfalah BA building", time: "1:15 PM", status: "Completed" },
     { id: 2, name: "Mike Wilson", dept: "IT Department", pickup: "Admin Building", drop: "Bank Alfalah BA building", time: "1:15 PM", status: "Completed" },
   ];
+
+  // ✅ Handle ride request success
+  const handleSuccess = (rideForm) => {
+    const newRide = {
+      id: Date.now(),
+      name: "Sarah Johnson", // later can come from logged-in user
+      dept: "IT Department",
+      pickup: rideForm.pickup,
+      drop: rideForm.drop,
+      time: rideForm.time,
+      status: "Pending",
+    };
+
+    setActiveRequests((prev) => [...prev, newRide]); // add ride
+    setSuccessMessage("✅ Ride request created successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  };
 
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
@@ -88,10 +105,7 @@ export default function RiderDashboard() {
       <RideRequestModal
         isOpen={showRequest}
         onClose={() => setShowRequest(false)}
-        onSuccess={() => {
-          setSuccessMessage("✅ Ride request created successfully!");
-          setTimeout(() => setSuccessMessage(""), 3000); // auto-hide in 3s
-        }}
+        onSuccess={handleSuccess} // ✅ add ride to active requests
       />
     </main>
   );
