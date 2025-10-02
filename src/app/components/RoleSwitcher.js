@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Car, User } from "lucide-react";
 
 export default function RoleSwitcher({ activeRole = "rider" }) {
-  const router = useRouter();
+ 
   const [selected, setSelected] = useState(activeRole); // driver pre-selected
 
   const handleSelect = (role) => {

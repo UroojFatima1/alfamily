@@ -9,18 +9,33 @@ import RideRequestModal from "../request/page";
 export default function RiderDashboard() {
   const [showRequest, setShowRequest] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [activeRequests, setActiveRequests] = useState([]); // ✅ now in state
+  const [activeRequests, setActiveRequests] = useState([]);
 
   const pastRides = [
-    { id: 1, name: "Mike Wilson", dept: "IT Department", pickup: "Admin Building", drop: "Bank Alfalah BA building", time: "1:15 PM", status: "Completed" },
-    { id: 2, name: "Mike Wilson", dept: "IT Department", pickup: "Admin Building", drop: "Bank Alfalah BA building", time: "1:15 PM", status: "Completed" },
+    {
+      id: 1,
+      name: "Mike Wilson",
+      dept: "IT Department",
+      pickup: "Admin Building",
+      drop: "Bank Alfalah BA building",
+      time: "1:15 PM",
+      status: "Completed",
+    },
+    {
+      id: 2,
+      name: "Mike Wilson",
+      dept: "IT Department",
+      pickup: "Admin Building",
+      drop: "Bank Alfalah BA building",
+      time: "1:15 PM",
+      status: "Completed",
+    },
   ];
 
-  // ✅ Handle ride request success
   const handleSuccess = (rideForm) => {
     const newRide = {
       id: Date.now(),
-      name: "Sarah Johnson", // later can come from logged-in user
+      name: "Sarah Johnson",
       dept: "IT Department",
       pickup: rideForm.pickup,
       drop: rideForm.drop,
@@ -28,8 +43,14 @@ export default function RiderDashboard() {
       status: "Pending",
     };
 
-    setActiveRequests((prev) => [...prev, newRide]); // add ride
+    setActiveRequests((prev) => [...prev, newRide]);
     setSuccessMessage("✅ Ride request created successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  };
+
+  const handleCancel = (id) => {
+    setActiveRequests((prev) => prev.filter((ride) => ride.id !== id));
+    setSuccessMessage("❌ Ride request cancelled.");
     setTimeout(() => setSuccessMessage(""), 3000);
   };
 
@@ -38,14 +59,12 @@ export default function RiderDashboard() {
       <GlobalNavbar />
 
       <section className="max-w-5xl mx-auto px-6 py-10 w-full space-y-8">
-        {/* ✅ Success Message */}
         {successMessage && (
           <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md text-center">
             {successMessage}
           </div>
         )}
 
-        {/* Welcome */}
         <div className="bg-[var(--card)] rounded-2xl p-6 shadow-soft">
           <h2 className="text-2xl font-bold">
             Welcome <span className="text-[var(--accent)]">Sarah 👋</span>
@@ -58,7 +77,6 @@ export default function RiderDashboard() {
           </p>
         </div>
 
-        {/* Request a Ride Button */}
         <div className="flex justify-center">
           <button
             className="btn-primary px-8 py-3 text-lg flex items-center gap-2"
@@ -68,7 +86,6 @@ export default function RiderDashboard() {
           </button>
         </div>
 
-        {/* Active Requests */}
         <div>
           <h3 className="text-xl font-bold mb-4">My Ride Requests</h3>
           {activeRequests.length === 0 ? (
@@ -82,13 +99,23 @@ export default function RiderDashboard() {
           ) : (
             <div className="space-y-4">
               {activeRequests.map((ride) => (
-                <RideCard key={ride.id} ride={ride} role="rider" />
+                <div
+                  key={ride.id}
+                  className="bg-[var(--card)] p-4 rounded-xl shadow-md flex items-center justify-between"
+                >
+                  <RideCard ride={ride} role="rider" />
+                  <button
+                    onClick={() => handleCancel(ride.id)}
+                    className="ml-4 px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Past Rides */}
         <div>
           <h3 className="text-xl font-bold mb-4">Past Rides</h3>
           <div className="space-y-4">
@@ -101,11 +128,10 @@ export default function RiderDashboard() {
 
       <Footer />
 
-      {/* Ride Request Modal */}
       <RideRequestModal
         isOpen={showRequest}
         onClose={() => setShowRequest(false)}
-        onSuccess={handleSuccess} // ✅ add ride to active requests
+        onSuccess={handleSuccess}
       />
     </main>
   );
