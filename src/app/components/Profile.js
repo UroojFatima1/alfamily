@@ -2,8 +2,21 @@
 
 import { useState } from "react";
 
-export default function Profile() {
-  const [role, setRole] = useState("rider");
+export default function Profile({ initialRole = "rider" }) {
+  const [role, setRole] = useState(initialRole);   // "rider" | "driver"
+  const [pendingRole, setPendingRole] = useState(null);
+
+  const handleSwitch = (newRole) => {
+    if (role === newRole) return;
+    setPendingRole(newRole);
+  };
+
+  const confirmSwitch = (confirm) => {
+    if (confirm && pendingRole) {
+      setRole(pendingRole);
+    }
+    setPendingRole(null);
+  };
 
   return (
     <div className="w-full max-w-4xl bg-[var(--card)] rounded-2xl shadow-soft p-8 space-y-8">
@@ -40,25 +53,27 @@ export default function Profile() {
         <p><span className="font-semibold">Office Extension:</span> 2456</p>
       </div>
 
-      {/* Vehicle Info */}
-      <div className="bg-[var(--background)] rounded-xl p-6 shadow-inner space-y-2">
-        <h3 className="font-semibold text-lg border-b border-gray-600 pb-2">
-          Vehicle Information
-        </h3>
-        <p><span className="font-semibold">Type:</span> Sedan</p>
-        <p><span className="font-semibold">Model:</span> Honda Accord 2022</p>
-        <p><span className="font-semibold">Registration #:</span> ABC-1234</p>
-        <p><span className="font-semibold">Seating Capacity:</span> 4 Passengers</p>
-        <p><span className="font-semibold">AC:</span> Yes</p>
-        <p><span className="font-semibold">Ride Availability:</span> Yes</p>
-      </div>
+      {/* Vehicle Info → only show if user came as driver */}
+      {initialRole === "driver" && role === "driver" && (
+        <div className="bg-[var(--background)] rounded-xl p-6 shadow-inner space-y-2">
+          <h3 className="font-semibold text-lg border-b border-gray-600 pb-2">
+            Vehicle Information
+          </h3>
+          <p><span className="font-semibold">Type:</span> Sedan</p>
+          <p><span className="font-semibold">Model:</span> Honda Accord 2022</p>
+          <p><span className="font-semibold">Registration #:</span> ABC-1234</p>
+          <p><span className="font-semibold">Seating Capacity:</span> 4 Passengers</p>
+          <p><span className="font-semibold">AC:</span> Yes</p>
+          <p><span className="font-semibold">Ride Availability:</span> Yes</p>
+        </div>
+      )}
 
       {/* Switch Role */}
       <div className="bg-[var(--background)] rounded-xl p-6 shadow-inner">
         <h3 className="font-semibold text-lg mb-4">Switch Role</h3>
         <div className="flex gap-4 mb-6">
           <button
-            onClick={() => setRole("rider")}
+            onClick={() => handleSwitch("rider")}
             className={`flex-1 px-6 py-3 rounded-lg border ${
               role === "rider"
                 ? "bg-[var(--accent)] text-black font-semibold"
@@ -68,7 +83,7 @@ export default function Profile() {
             Rider
           </button>
           <button
-            onClick={() => setRole("driver")}
+            onClick={() => handleSwitch("driver")}
             className={`flex-1 px-6 py-3 rounded-lg border ${
               role === "driver"
                 ? "bg-[var(--accent)] text-black font-semibold"
@@ -79,9 +94,33 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Conditional Driver Form */}
-        {role === "driver" && (
-          <div className="space-y-4">
+        {/* Confirmation Box */}
+        {pendingRole && (
+          <div className="p-4 border rounded-lg bg-[var(--background)] space-y-3">
+            <p>
+              Are you sure you want to switch to{" "}
+              <span className="font-semibold">{pendingRole}</span> role?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => confirmSwitch(true)}
+                className="btn-primary flex-1"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => confirmSwitch(false)}
+                className="border border-gray-600 rounded-lg px-6 py-2 flex-1 hover:border-[var(--accent)]"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Driver Form → only if rider switched to driver */}
+        {role === "driver" && initialRole === "rider" && !pendingRole && (
+          <div className="space-y-4 mt-6">
             <h4 className="font-semibold mb-2">Additional Information</h4>
 
             <select className="input">
@@ -118,7 +157,6 @@ export default function Profile() {
               </label>
             </div>
 
-            {/* Save / Cancel */}
             <div className="flex gap-4 mt-4">
               <button className="btn-primary flex-1">Save Changes</button>
               <button className="border border-gray-600 rounded-lg px-6 py-2 flex-1 hover:border-[var(--accent)]">

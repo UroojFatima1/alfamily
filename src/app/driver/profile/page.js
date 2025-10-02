@@ -8,11 +8,9 @@ export default function ProfilePage() {
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
       <GlobalNavbar />
-
       <section className="max-w-5xl mx-auto px-6 py-10 w-full">
-        <Profile />
+        <Profile initialRole="driver" />
       </section>
-
       <Footer />
     </main>
   );
