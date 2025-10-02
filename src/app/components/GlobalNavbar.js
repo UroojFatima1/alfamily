@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Car, LogIn } from "lucide-react";
 
 export default function GlobalNavbar() {
   const router = useRouter();
@@ -35,10 +36,7 @@ export default function GlobalNavbar() {
     <header className="bg-[var(--card)] shadow-soft sticky top-0 z-50">
       <nav className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
-        <Link
-          href={getPath("home")}
-          className="text-lg font-bold text-[var(--accent)] link-hover"
-        >
+         <Link href={getPath("home")} className="flex items-center gap-2">
           <Car className="w-6 h-6 text-[var(--accent)]" />
           <span className="font-bold text-lg">Alfamily</span>
         </Link>
