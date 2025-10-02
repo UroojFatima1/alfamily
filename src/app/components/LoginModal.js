@@ -44,7 +44,18 @@ export default function LoginModal({ isOpen, onClose }) {
       if (isForgot) {
         setSuccess("📧 Reset link sent to your email!");
       } else {
-        const isDriver = form.email.includes("driver");
+        // 👉 Decide role from email (or later from API response)
+        const role = form.email.includes("driver") ? "driver" : "rider";
+
+        // ✅ Save user in localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            email: form.email,
+            role: role,
+            token: "mock-jwt-token", // replace with real API token
+          })
+        );
 
         setSuccess("✅ Login successful!");
         setTimeout(() => {
@@ -52,7 +63,7 @@ export default function LoginModal({ isOpen, onClose }) {
           setErrors({});
           setSuccess("");
           onClose();
-          router.push(isDriver ? "/driver/home" : "/rider/home");
+          router.push(`/${role}/home`);
         }, 1200);
       }
     }

@@ -136,7 +136,7 @@ export default function DriverSignup() {
           {/* Scrollable form */}
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             {/* Employee ID */}
-            {/*<div className="relative">
+            {<div className="relative">
               <input
                 type="text"
                 placeholder="Employee Id"
@@ -153,7 +153,7 @@ export default function DriverSignup() {
               {errors.empid && (
                 <p className="text-red-500 text-sm">{errors.empid}</p>
               )}
-            </div>*/}
+            </div>}
 
             {/* Full Name */}
             <div>
