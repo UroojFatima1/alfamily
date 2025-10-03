@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
+import OfferRideModal from "../offer/page"; // make sure OfferRideModal is exported from this path
 
 export default function DriverDashboard() {
+  const [showOffer, setShowOffer] = useState(false);
+
   const rideRequests = [
     {
       id: 1,
@@ -35,9 +39,14 @@ export default function DriverDashboard() {
     },
   ];
 
+  const handleOfferSuccess = (rideData) => {
+    console.log("New Ride Offered:", rideData);
+    setShowOffer(false);
+  };
+
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
-      <GlobalNavbar/>
+      <GlobalNavbar />
 
       <section className="max-w-5xl mx-auto px-6 py-10 w-full space-y-8">
         {/* Welcome */}
@@ -65,11 +74,23 @@ export default function DriverDashboard() {
 
         {/* Offer a Ride Button */}
         <div className="flex justify-center mt-8">
-          <button className="btn-primary px-8 py-3 text-lg">Offer a Ride</button>
+          <button
+            className="btn-primary px-8 py-3 text-lg"
+            onClick={() => setShowOffer(true)}
+          >
+            Offer a Ride
+          </button>
         </div>
       </section>
 
       <Footer />
+
+      {/* Offer Ride Modal */}
+      <OfferRideModal
+        isOpen={showOffer}
+        onClose={() => setShowOffer(false)}
+        onSuccess={handleOfferSuccess}
+      />
     </main>
   );
 }
