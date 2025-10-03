@@ -1,39 +1,61 @@
 "use client";
-
 export default function RiderRequestList({ requests }) {
+  const statusColors = {
+    Pending: "bg-yellow-500/20 text-yellow-400",
+    Accepted: "bg-green-500/20 text-green-400",
+    Completed: "bg-gray-500/20 text-gray-400",
+  };
+
   return (
     <div className="space-y-4">
-      <h4 className="text-lg font-semibold">Current Requests</h4>
       {requests.map((req) => (
-        <div key={req.id} className="bg-[var(--card)] rounded-xl p-5 shadow-soft space-y-3">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="font-semibold">{req.name}</p>
-              <span className="text-sm text-[var(--muted)]">{req.role}</span>
-            </div>
+        <div
+          key={req.id}
+          className="bg-[var(--card)] p-4 rounded-xl shadow-soft flex justify-between items-start"
+        >
+          {/* Rider Info */}
+          <div>
+            <h4 className="font-semibold">{req.name}</h4>
+            <p className="text-sm text-[var(--muted)]">{req.role}</p>
+            <p className="text-sm mt-1">
+              <span className="font-medium">Pickup:</span> {req.pickup}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Drop:</span> {req.drop}
+            </p>
+          </div>
+
+          {/* Right Side: Status + Actions */}
+          <div className="flex flex-col items-end gap-2">
+            {/* Status pill */}
+            <span
+              className={`px-3 py-1 text-xs rounded-full font-medium ${statusColors[req.status]}`}
+            >
+              {req.status}
+            </span>
+
+            {/* Buttons */}
+            {req.status === "Pending" && (
+              <div className="flex gap-2">
+                <button className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600">
+                  Accept
+                </button>
+                <button className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600">
+                  Decline
+                </button>
+              </div>
+            )}
+
             {req.status === "Accepted" && (
-              <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-lg">
-                Accepted
-              </span>
+              <button className="px-4 py-2 rounded-lg bg-[var(--accent)] text-black font-semibold hover:bg-yellow-400">
+                Start Ride
+              </button>
+            )}
+
+            {req.status === "Completed" && (
+              <span className="text-sm text-gray-400">Completed</span>
             )}
           </div>
-
-          <div className="text-sm space-y-1">
-            <p><span className="text-[var(--muted)]">Pickup:</span> {req.pickup}</p>
-            <p><span className="text-[var(--muted)]">Drop:</span> {req.drop}</p>
-          </div>
-
-          {req.status === "Accepted" ? (
-            <div className="flex gap-3">
-              <button className="flex-1 border border-[var(--accent)] rounded-lg py-2 hover:bg-[var(--accent)] hover:text-[var(--background)] transition">Chat</button>
-              <button className="flex-1 btn-primary">Start Ride</button>
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <button className="flex-1 bg-red-600 text-white rounded-lg py-2 hover:bg-red-700 transition">Decline</button>
-              <button className="flex-1 bg-green-600 text-white rounded-lg py-2 hover:bg-green-700 transition">Accept</button>
-            </div>
-          )}
         </div>
       ))}
     </div>

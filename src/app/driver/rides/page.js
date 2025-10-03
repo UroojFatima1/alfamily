@@ -19,8 +19,8 @@ export default function OfferRides() {
     seatsFilled: 2,
     totalSeats: 4,
     bookedRiders: [
-      { id: 1, name: "Ahmed", avatar: "/images/ahmed.png" },
-      { id: 2, name: "Sara", avatar: "/images/sara.png" },
+      { id: 1, name: "Ahmed", avatar: "/images/avatar.png" },
+      { id: 2, name: "Sara", avatar: "/images/avatar2.png" },
     ],
   };
 

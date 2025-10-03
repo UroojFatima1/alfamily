@@ -15,7 +15,7 @@ export default function RequestRideCard({
       {/* Top Section: Avatar + Name + Rating */}
       <div className="flex items-center gap-3">
         <Image
-          src="/images/avatar-placeholder.png"
+          src="/images/avatar.png"
           alt={name}
           width={40}
           height={40}
