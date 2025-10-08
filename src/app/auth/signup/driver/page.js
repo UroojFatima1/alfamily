@@ -6,17 +6,15 @@ import Footer from "@/app/components/Footer";
 import OtpModal from "@/app/components/OtpModal";
 import Popup from "@/app/components/popup";
 
-export default function DriverSignup() {
+export default function DriverSignup()
+{
   const [showOtp, setShowOtp] = useState(false);
+  const [userId, setUserId] = useState(null);
   const [errors, setErrors] = useState({});
-  //const [loadingEmp, setLoadingEmp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Popup state
   const [popup, setPopup] = useState({ open: false, type: "info", message: "" });
 
   const [form, setForm] = useState({
-    empid: "",
     fullName: "",
     email: "",
     mobile: "",
@@ -32,20 +30,20 @@ export default function DriverSignup() {
     acAvailable: false,
   });
 
-  // handle form change
-  const handleChange = (field, value) => {
+  const handleChange = (field, value) =>
+  {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // validation
-  const validate = () => {
+  // Validate form
+  const validate = () =>
+  {
     let newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     const mobileRegex = /^\+92-\d{3}-\d{7}$/;
     const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
 
-    if (!form.empid) newErrors.empid = "Employee Id is required";
     if (!form.fullName) newErrors.fullName = "Full name is required";
     if (!form.email) newErrors.email = "Email is required";
     else if (!emailRegex.test(form.email)) newErrors.email = "Invalid email format";
@@ -62,7 +60,8 @@ export default function DriverSignup() {
       newErrors.password = "At least 8 chars, uppercase, lowercase & number";
 
     if (!form.cnic) newErrors.cnic = "CNIC is required";
-    else if (!cnicRegex.test(form.cnic)) newErrors.cnic = "Format: 12345-6789012-3";
+    else if (!cnicRegex.test(form.cnic))
+      newErrors.cnic = "Format: 12345-6789012-3";
 
     if (!form.vehicleType) newErrors.vehicleType = "Vehicle type is required";
     if (!form.model) newErrors.model = "Make & Model is required";
@@ -73,54 +72,106 @@ export default function DriverSignup() {
     return newErrors;
   };
 
-  // submit
-  const handleSubmit = async () => {
+  // Submit form
+  const handleSubmit = async () =>
+  {
     const newErrors = validate();
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        setSubmitting(true);
+    setSubmitting(true);
+    document.body.style.cursor = "wait";
+    try
+    {
+      const payload = {
+        role: "driver",
+        fullName: form.fullName,
+        email: form.email,
+        mobile: form.mobile,
+        department: form.department,
+        designation: form.designation,
+        password: form.password,
+        cnic: form.cnic,
+        vehicleType: form.vehicleType,
+        model: form.model,
+        registration: form.registration,
+        seating: Number(form.seating),
+        offerRide: form.offerRide === "yes",
+        acAvailable: form.acAvailable,
+      };
 
-        const res = await fetch("https://alfamilys.vercel.app/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            role: "driver",
-            fullName: form.fullName,
-            email: form.email,
-            mobile: form.mobile,
-            department: form.department,
-            designation: form.designation,
-            password: form.password,
-            cnic: form.cnic,
-            vehicleType: form.vehicleType,
-            model: form.model,
-            registrationNumber: form.registration,
-            seatingCapacity: Number(form.seating),
-            willingToOfferRide: form.offerRide === "yes",
-            acAvailable: form.acAvailable,
-          }),
+      console.log("Driver Payload:", payload);
+
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("Response Status:", res.status);
+      const data = await res.json().catch(() => ({}));
+      console.log("Response Body:", data);
+
+      if (res.ok && data.userId)
+      {
+        setUserId(data.userId);
+        setShowOtp(true);
+        setPopup({
+          open: true,
+          type: "success",
+          message: "OTP sent! Please verify to complete registration.",
         });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          setShowOtp(true);
-          setPopup({ open: true, type: "success", message: "Registered successfully!" });
-        } else {
-          setPopup({ open: true, type: "error", message: data.message || "Registration failed" });
-        }
-      } catch (err) {
-        setPopup({ open: true, type: "error", message: "Network error" });
-      } finally {
-        setSubmitting(false);
+      } else
+      {
+        setPopup({
+          open: true,
+          type: "error",
+          message: data.message || "Registration failed",
+        });
       }
+    } catch (err)
+    {
+      console.error("Driver register error:", err);
+      setPopup({ open: true, type: "error", message: "Network error" });
+    } finally
+    {
+      setSubmitting(false);
+      document.body.style.cursor = "default";
+    }
+  };
+
+  // Verify OTP
+  const handleVerifyOtp = async (enteredOtp) =>
+  {
+    try
+    {
+      const res = await fetch("https://alfamilys.vercel.app/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, otp: enteredOtp }),
+      });
+
+      const data = await res.json();
+      if (res.ok)
+      {
+        setPopup({
+          open: true,
+          type: "success",
+          message: "Driver verified successfully! ✅",
+        });
+        setShowOtp(false);
+      } else
+      {
+        throw new Error(data.message || "Invalid OTP");
+      }
+    } catch (err)
+    {
+      throw new Error(err.message || "Verification failed");
     }
   };
 
   return (
-    <main className="bg-[var(--background)] text-[var(--foreground)] h-screen flex flex-col overflow-hidden">
+    <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
       <Navbar />
 
       <section className="flex-1 flex items-center justify-center px-6 py-6 overflow-hidden">
@@ -133,71 +184,32 @@ export default function DriverSignup() {
             </p>
           </div>
 
-          {/* Scrollable form */}
+          {/* Scrollable Form */}
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-            {/* Employee ID */}
-            {/*<div className="relative">
-              <input
-                type="text"
-                placeholder="Employee Id"
-                className="input"
-                value={form.empid}
-                onChange={(e) =>
-                  handleChange("empid", e.target.value.replace(/\D/g, ""))
-                }
-                maxLength={5}
-              />
-              {loadingEmp && (
-                <span className="absolute right-3 top-3 animate-spin border-2 border-[var(--accent)] border-t-transparent rounded-full w-5 h-5"></span>
-              )}
-              {errors.empid && (
-                <p className="text-red-500 text-sm">{errors.empid}</p>
-              )}
-            </div>*/}
-
-            {/* Full Name */}
-            <div>
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="input"
-                value={form.fullName}
-                onChange={(e) => handleChange("fullName", e.target.value)}
-              />
-              {errors.fullName && (
-                <p className="text-red-500 text-sm">{errors.fullName}</p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <input
-                type="email"
-                placeholder="Official Email"
-                className="input"
-                value={form.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Mobile */}
-            <div>
-              <input
-                type="tel"
-                placeholder="Mobile Number (+92-XXX-XXXXXXX)"
-                className="input"
-                value={form.mobile}
-                onChange={(e) =>
-                  handleChange("mobile", e.target.value.replace(/[^0-9+-]/g, ""))
-                }
-              />
-              {errors.mobile && (
-                <p className="text-red-500 text-sm">{errors.mobile}</p>
-              )}
-            </div>
+            {[
+              ["fullName", "Full Name", "text"],
+              ["email", "Official Email", "email"],
+              ["mobile", "Mobile Number (+92-XXX-XXXXXXX)", "tel"],
+              ["designation", "Designation", "text"],
+              ["password", "Password", "password"],
+              ["cnic", "CNIC (12345-6789012-3)", "text"],
+              ["model", "Make & Model", "text"],
+              ["registration", "Registration Number", "text"],
+              ["seating", "Seating Capacity", "number"],
+            ].map(([key, placeholder, type]) => (
+              <div key={key}>
+                <input
+                  type={type}
+                  placeholder={placeholder}
+                  className="input"
+                  value={form[key]}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                />
+                {errors[key] && (
+                  <p className="text-red-500 text-sm">{errors[key]}</p>
+                )}
+              </div>
+            ))}
 
             {/* Department */}
             <div>
@@ -225,56 +237,16 @@ export default function DriverSignup() {
                     strokeWidth="2"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </span>
               </div>
               {errors.department && (
                 <p className="text-red-500 text-sm">{errors.department}</p>
-              )}
-            </div>
-
-            {/* Designation */}
-            <div>
-              <input
-                type="text"
-                placeholder="Designation"
-                className="input"
-                value={form.designation}
-                onChange={(e) => handleChange("designation", e.target.value)}
-              />
-              {errors.designation && (
-                <p className="text-red-500 text-sm">{errors.designation}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                className="input"
-                value={form.password}
-                onChange={(e) => handleChange("password", e.target.value)}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password}</p>
-              )}
-            </div>
-
-            {/* CNIC */}
-            <div>
-              <input
-                type="text"
-                placeholder="CNIC (12345-6789012-3)"
-                className="input"
-                value={form.cnic}
-                onChange={(e) =>
-                  handleChange("cnic", e.target.value.replace(/[^0-9-]/g, ""))
-                }
-              />
-              {errors.cnic && (
-                <p className="text-red-500 text-sm">{errors.cnic}</p>
               )}
             </div>
 
@@ -301,7 +273,11 @@ export default function DriverSignup() {
                     strokeWidth="2"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </span>
               </div>
@@ -310,81 +286,32 @@ export default function DriverSignup() {
               )}
             </div>
 
-            {/* Model */}
-            <div>
-              <input
-                type="text"
-                placeholder="Make & Model"
-                className="input"
-                value={form.model}
-                onChange={(e) => handleChange("model", e.target.value)}
-              />
-              {errors.model && (
-                <p className="text-red-500 text-sm">{errors.model}</p>
-              )}
-            </div>
-
-            {/* Registration */}
-            <div>
-              <input
-                type="text"
-                placeholder="Registration Number"
-                className="input"
-                value={form.registration}
-                onChange={(e) => handleChange("registration", e.target.value)}
-              />
-              {errors.registration && (
-                <p className="text-red-500 text-sm">{errors.registration}</p>
-              )}
-            </div>
-
-            {/* Seating */}
-            <div>
-              <input
-                type="number"
-                placeholder="Seating Capacity"
-                className="input"
-                value={form.seating}
-                onChange={(e) => handleChange("seating", e.target.value)}
-              />
-              {errors.seating && (
-                <p className="text-red-500 text-sm">{errors.seating}</p>
-              )}
-            </div>
-
             {/* Offer Ride */}
-            <div>
+            <div className="mt-2">
               <span className="block text-sm text-[var(--muted)] mb-1">
                 Willing to Offer Rides?
               </span>
-              <div className="space-y-3">
-                <label className="w-full block border border-gray-600 rounded-lg px-4 py-3 cursor-pointer hover:border-[var(--accent)] transition">
-                  <input
-                    type="radio"
-                    name="offerRide"
-                    value="yes"
-                    checked={form.offerRide === "yes"}
-                    onChange={(e) => handleChange("offerRide", e.target.value)}
-                  />
-                  Yes
-                </label>
-                <label className="w-full block border border-gray-600 rounded-lg px-4 py-3 cursor-pointer hover:border-[var(--accent)] transition">
-                  <input
-                    type="radio"
-                    name="offerRide"
-                    value="no"
-                    checked={form.offerRide === "no"}
-                    onChange={(e) => handleChange("offerRide", e.target.value)}
-                  />
-                  No
-                </label>
+              <div className="flex gap-4">
+                {["yes", "no"].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => handleChange("offerRide", opt)}
+                    className={`flex-1 py-2 rounded-lg border text-center transition ${form.offerRide === opt
+                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                      : "border-gray-600 hover:border-[var(--accent)] text-[var(--foreground)]"
+                      }`}
+                  >
+                    {opt === "yes" ? "Yes" : "No"}
+                  </button>
+                ))}
               </div>
               {errors.offerRide && (
                 <p className="text-red-500 text-sm">{errors.offerRide}</p>
               )}
             </div>
 
-            {/* AC Available */}
+            {/* AC Toggle */}
             <div className="flex items-center justify-between border border-gray-600 rounded-lg px-4 py-3">
               <span className="text-sm text-[var(--muted)]">AC Available</span>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -400,7 +327,6 @@ export default function DriverSignup() {
             </div>
           </div>
 
-          {/* Submit */}
           <div className="p-6 border-t border-gray-700">
             <button
               type="button"
@@ -416,10 +342,12 @@ export default function DriverSignup() {
 
       <Footer />
 
-      {/* OTP Modal */}
-      <OtpModal isOpen={showOtp} onClose={() => setShowOtp(false)} />
+      <OtpModal
+        isOpen={showOtp}
+        onClose={() => setShowOtp(false)}
+        onVerify={handleVerifyOtp}
+      />
 
-      {/* Popup */}
       <Popup
         isOpen={popup.open}
         type={popup.type}

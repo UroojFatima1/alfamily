@@ -2,43 +2,125 @@
 
 import { useState, useEffect } from "react";
 
-export default function OtpModal({ isOpen, onClose }) {
+export default function OtpModal({ isOpen, onClose, onVerify, userData })
+{
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [timer, setTimer] = useState(60);
   const [resendEnabled, setResendEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  // Timer
-  useEffect(() => {
-    if (isOpen && timer > 0) {
+  // Reset on open
+  useEffect(() =>
+  {
+    if (isOpen)
+    {
+      setOtp(Array(6).fill(""));
+      setTimer(60);
+      setResendEnabled(false);
+      setError("");
+      setSuccessMsg("");
+    }
+  }, [isOpen]);
+
+  // Countdown for resend
+  useEffect(() =>
+  {
+    if (isOpen && timer > 0)
+    {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
       return () => clearTimeout(countdown);
-    } else if (timer === 0) {
+    } else if (timer === 0)
+    {
       setResendEnabled(true);
     }
   }, [timer, isOpen]);
 
-  // OTP input
-  const handleChange = (value, index) => {
-    if (/^\d?$/.test(value)) {
+  // OTP input handler
+  const handleChange = (value, index) =>
+  {
+    if (/^\d?$/.test(value))
+    {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
 
-      if (value && index < 5) {
+      if (value && index < 5)
+      {
         const nextInput = document.getElementById(`otp-${index + 1}`);
         nextInput?.focus();
       }
     }
   };
 
+  // Handle Verify
+  const handleVerify = async () =>
+  {
+    const enteredOtp = otp.join("");
+    if (enteredOtp.length !== 6)
+    {
+      setError("Please enter a valid 6-digit OTP");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try
+    {
+      await onVerify(enteredOtp);
+      setSuccessMsg("OTP verified successfully!");
+      setTimeout(onClose, 1200);
+    } catch (err)
+    {
+      setError(err.message || "Verification failed");
+    } finally
+    {
+      setLoading(false);
+    }
+  };
+
+  // Handle Resend OTP → re-hit register API
+  const handleResend = async () =>
+  {
+    if (!userData) return;
+    setResending(true);
+    setError("");
+    setSuccessMsg("");
+
+    try
+    {
+      const res = await fetch("https://alfamilys.vercel.app/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to resend OTP");
+
+      setTimer(60);
+      setResendEnabled(false);
+      setSuccessMsg("OTP resent successfully!");
+    } catch (err)
+    {
+      setError(err.message || "Failed to resend OTP");
+    } finally
+    {
+      setResending(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="bg-[var(--card)] rounded-2xl shadow-lg w-full max-w-md p-8 text-center space-y-6 relative">
         {/* Close */}
         <button
           onClick={onClose}
+          disabled={loading || resending}
           className="absolute top-3 right-3 text-[var(--muted)] hover:text-[var(--accent)]"
         >
           ✕
@@ -63,7 +145,6 @@ export default function OtpModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Title */}
         <h2 className="text-2xl font-bold">OTP Verification</h2>
         <p className="text-[var(--muted)] text-sm">
           We’ve sent a 6-digit OTP to your official email.
@@ -84,8 +165,8 @@ export default function OtpModal({ isOpen, onClose }) {
           ))}
         </div>
 
-        {/* Resend */}
-        <div className="text-sm text-[var(--muted)] space-y-2">
+        {/* Timer / Resend */}
+        <div className="text-sm text-[var(--muted)]">
           {!resendEnabled ? (
             <p>
               Resend OTP in{" "}
@@ -95,19 +176,49 @@ export default function OtpModal({ isOpen, onClose }) {
             </p>
           ) : (
             <button
-              onClick={() => {
-                setTimer(60);
-                setResendEnabled(false);
-              }}
-              className="text-[var(--accent)] font-semibold hover:underline"
+              onClick={handleResend}
+              disabled={resending}
+              className="text-[var(--accent)] font-semibold hover:underline disabled:opacity-60"
             >
-              Resend OTP
+              {resending ? "Resending..." : "Resend OTP"}
             </button>
           )}
         </div>
 
-        {/* Verify */}
-        <button className="btn-primary w-full">Verify</button>
+        {/* Error / Success */}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {successMsg && <p className="text-green-500 text-sm">{successMsg}</p>}
+
+        {/* Verify Button */}
+        <button
+          onClick={handleVerify}
+          disabled={loading}
+          className="btn-primary w-full flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {loading && (
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              />
+            </svg>
+          )}
+          {loading ? "Verifying..." : "Verify"}
+        </button>
       </div>
     </div>
   );

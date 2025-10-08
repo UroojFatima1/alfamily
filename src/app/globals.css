@@ -2,11 +2,16 @@
 
 /* Base Theme Variables */
 :root {
-  --background: #0B1B2B;   /* Dark blue background */
-  --foreground: #F8FAFC;   /* Light text */
-  --accent: #FFD233;       /* Alfalah yellow */
-  --card: #1C2A3A;         /* Card background */
-  --muted: #94a3b8;        /* Muted gray text */
+  --background: #0B1B2B;
+  /* Dark blue background */
+  --foreground: #F8FAFC;
+  /* Light text */
+  --accent: #FFD233;
+  /* Alfalah yellow */
+  --card: #1C2A3A;
+  /* Card background */
+  --muted: #94a3b8;
+  /* Muted gray text */
 }
 
 @theme inline {
@@ -32,18 +37,22 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--card); /* blends with form background */
+  background: var(--card);
+  /* blends with form background */
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent); /* Alfalah yellow */
+  background: var(--accent);
+  /* Alfalah yellow */
   border-radius: 999px;
-  border: 2px solid var(--card); /* creates spacing effect */
+  border: 2px solid var(--card);
+  /* creates spacing effect */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #facc15; /* lighter yellow on hover */
+  background: #facc15;
+  /* lighter yellow on hover */
 }
 
 /* Firefox */
@@ -76,7 +85,8 @@ body {
 /* Make date/time icons visible on dark backgrounds */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(1); /* turn dark icon to light */
+  filter: invert(1);
+  /* turn dark icon to light */
   cursor: pointer;
 }
 
@@ -96,17 +106,27 @@ input[type="time"]::-moz-focus-inner {
 
 
 .logout-hover {
-  @apply text-red-500 hover:text-red-600; 
+  @apply text-red-500 hover:text-red-600;
 }
 
 .logout-hover:hover {
-  color: #facc15; 
+  color: #facc15;
 }
+
 .link-hover {
   @apply hover:text-[var(--primary)];
 }
 
 .link-hover:hover {
-  color: #facc15; 
-  transition: color 0.2s ease-in-out; 
+  color: #facc15;
+  transition: color 0.2s ease-in-out;
+}
+
+body.loading,
+button.loading,
+.btn-primary.loading {
+  cursor: wait !important;
+  pointer-events: none;
+  opacity: 0.8;
+  transition: opacity 0.2s ease-in-out;
 }

@@ -1,4 +1,14 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
 
-export default nextConfig;
+// next.config.js
+export default {
+    async rewrites()
+    {
+        return [
+            {
+                source: "/api/auth/:path*",
+                destination: "https://alfamilys.vercel.app/api/auth/:path*",
+            },
+        ];
+    },
+};
