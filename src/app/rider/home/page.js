@@ -33,6 +33,7 @@ export default function RiderDashboard() {
   ];
 
   const handleSuccess = (rideForm) => {
+    
     const newRide = {
       id: Date.now(),
       name: "Sarah Johnson",

@@ -6,8 +6,8 @@ export default {
     {
         return [
             {
-                source: "/api/auth/:path*",
-                destination: "https://alfamilys.vercel.app/api/auth/:path*",
+                source: "/api/:path*",
+                destination: "https://alfamilys.vercel.app/api/:path*",
             },
         ];
     },

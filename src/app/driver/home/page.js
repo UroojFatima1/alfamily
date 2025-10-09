@@ -4,7 +4,7 @@ import { useState } from "react";
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
-import OfferRideModal from "../offer/page"; // make sure OfferRideModal is exported from this path
+import OfferRideModal from "../offer/page"; 
 
 export default function DriverDashboard() {
   const [showOffer, setShowOffer] = useState(false);
