@@ -4,15 +4,12 @@ import { useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import OtpModal from "@/app/components/OtpModal";
-import Popup from "@/app/components/popup";
 
-export default function DriverSignup()
-{
+export default function DriverSignup() {
   const [showOtp, setShowOtp] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const [errors, setErrors] = useState({});
+  const [apiMessage, setApiMessage] = useState({ type: "", text: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [popup, setPopup] = useState({ open: false, type: "info", message: "" });
+  const [userId, setUserId] = useState(null);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -30,14 +27,42 @@ export default function DriverSignup()
     acAvailable: false,
   });
 
-  const handleChange = (field, value) =>
-  {
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // Validate form
-  const validate = () =>
-  {
+  // ✅ Format Mobile (+92-XXX-XXXXXXX)
+  const formatMobile = (value) => {
+    let cleaned = value.replace(/[^0-9]/g, "");
+    if (cleaned.startsWith("92")) cleaned = "+" + cleaned;
+    else if (cleaned.startsWith("0")) cleaned = "+92" + cleaned.slice(1);
+    else if (!cleaned.startsWith("+92")) cleaned = "+92" + cleaned;
+
+    if (cleaned.length > 3 && cleaned.length <= 6)
+      cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3);
+    else if (cleaned.length > 6 && cleaned.length <= 10)
+      cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3, 6) + "-" + cleaned.slice(6);
+    else if (cleaned.length > 10)
+      cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3, 6) + "-" + cleaned.slice(6, 13);
+    return cleaned;
+  };
+
+  // ✅ Format CNIC (12345-6789012-3)
+  const formatCnic = (value) => {
+    let cleaned = value.replace(/[^0-9]/g, "");
+    if (cleaned.length <= 5) return cleaned;
+    if (cleaned.length <= 12)
+      return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+    if (cleaned.length <= 13)
+      return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12)}`;
+    return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12, 13)}`;
+  };
+
+  // ✅ Validation
+  const validate = () => {
     let newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -72,17 +97,17 @@ export default function DriverSignup()
     return newErrors;
   };
 
-  // Submit form
-  const handleSubmit = async () =>
-  {
+  // ✅ Submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setApiMessage({ type: "", text: "" });
+
     const newErrors = validate();
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     setSubmitting(true);
-    document.body.style.cursor = "wait";
-    try
-    {
+    try {
       const payload = {
         role: "driver",
         fullName: form.fullName,
@@ -94,13 +119,11 @@ export default function DriverSignup()
         cnic: form.cnic,
         vehicleType: form.vehicleType,
         model: form.model,
-        registration: form.registration,
-        seating: Number(form.seating),
-        offerRide: form.offerRide === "yes",
+        registrationNumber: form.registration,
+        seatingCapacity: Number(form.seating),
+        willingToOfferRide: form.offerRide === "yes",
         acAvailable: form.acAvailable,
       };
-
-      console.log("Driver Payload:", payload);
 
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -108,84 +131,63 @@ export default function DriverSignup()
         body: JSON.stringify(payload),
       });
 
-      console.log("Response Status:", res.status);
-      const data = await res.json().catch(() => ({}));
-      console.log("Response Body:", data);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to register");
 
-      if (res.ok && data.userId)
-      {
-        setUserId(data.userId);
-        setShowOtp(true);
-        setPopup({
-          open: true,
-          type: "success",
-          message: "OTP sent! Please verify to complete registration.",
-        });
-      } else
-      {
-        setPopup({
-          open: true,
-          type: "error",
-          message: data.message || "Registration failed",
-        });
-      }
-    } catch (err)
-    {
-      console.error("Driver register error:", err);
-      setPopup({ open: true, type: "error", message: "Network error" });
-    } finally
-    {
+      setUserId(data.userId);
+      setShowOtp(true);
+      setApiMessage({
+        type: "success",
+        text: "✅ OTP sent! Please verify your email to complete registration.",
+      });
+    } catch (err) {
+      setApiMessage({ type: "error", text: err.message });
+    } finally {
       setSubmitting(false);
-      document.body.style.cursor = "default";
     }
   };
 
-  // Verify OTP
-  const handleVerifyOtp = async (enteredOtp) =>
-  {
-    try
-    {
-      const res = await fetch("https://alfamilys.vercel.app/api/auth/verify-otp", {
+  // ✅ OTP Verify
+  const handleVerifyOtp = async (otp) => {
+    if (!userId) return;
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, otp: enteredOtp }),
+        body: JSON.stringify({ userId, otp }),
       });
-
       const data = await res.json();
-      if (res.ok)
-      {
-        setPopup({
-          open: true,
-          type: "success",
-          message: "Driver verified successfully! ✅",
-        });
-        setShowOtp(false);
-      } else
-      {
-        throw new Error(data.message || "Invalid OTP");
-      }
-    } catch (err)
-    {
-      throw new Error(err.message || "Verification failed");
+      if (!res.ok) throw new Error(data?.error || "Invalid OTP");
+
+      setShowOtp(false);
+      setApiMessage({
+        type: "success",
+        text: "🎉 Registration successful! You can now log in.",
+      });
+    } catch (err) {
+      setApiMessage({ type: "error", text: "❌ " + err.message });
     }
   };
 
   return (
-    <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
+    <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col overflow-hidden">
       <Navbar />
 
-      <section className="flex-1 flex items-center justify-center px-6 py-6 overflow-hidden">
+      <section className="flex-1 flex items-center justify-center px-6 py-8">
         <div className="w-full max-w-lg bg-[var(--card)] rounded-2xl shadow-soft flex flex-col h-full max-h-[85vh]">
           {/* Header */}
-          <div className="p-6 border-b border-gray-700">
-            <h2 className="text-2xl font-bold text-center">Driver Registration 🚗</h2>
-            <p className="text-[var(--muted)] text-center text-sm mt-1">
+          <div className="p-6 border-b border-gray-700 text-center">
+            <h2 className="text-2xl font-bold">Driver Registration 🚗</h2>
+            <p className="text-[var(--muted)] text-sm mt-1">
               Register as a driver and offer rides to your colleagues.
             </p>
           </div>
 
           {/* Scrollable Form */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar"
+          >
             {[
               ["fullName", "Full Name", "text"],
               ["email", "Official Email", "email"],
@@ -203,7 +205,13 @@ export default function DriverSignup()
                   placeholder={placeholder}
                   className="input"
                   value={form[key]}
-                  onChange={(e) => handleChange(key, e.target.value)}
+                  onChange={(e) => {
+                    if (key === "mobile")
+                      handleChange("mobile", formatMobile(e.target.value));
+                    else if (key === "cnic")
+                      handleChange("cnic", formatCnic(e.target.value));
+                    else handleChange(key, e.target.value);
+                  }}
                 />
                 {errors[key] && (
                   <p className="text-red-500 text-sm">{errors[key]}</p>
@@ -213,38 +221,21 @@ export default function DriverSignup()
 
             {/* Department */}
             <div>
-              <div className="relative">
-                <select
-                  className="input appearance-none font-normal text-[var(--foreground)] pr-10"
-                  value={form.department}
-                  onChange={(e) => handleChange("department", e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select Department
-                  </option>
-                  <option value="HR">Human Resources</option>
-                  <option value="IT">Information Technology</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Other">Other</option>
-                </select>
-                <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-[var(--accent)]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </span>
-              </div>
+              <select
+                className="input appearance-none font-normal text-[var(--foreground)]"
+                value={form.department}
+                onChange={(e) => handleChange("department", e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Department
+                </option>
+                <option value="HR">Human Resources</option>
+                <option value="IT">Information Technology</option>
+                <option value="Finance">Finance</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Operations">Operations</option>
+                <option value="Other">Other</option>
+              </select>
               {errors.department && (
                 <p className="text-red-500 text-sm">{errors.department}</p>
               )}
@@ -252,42 +243,25 @@ export default function DriverSignup()
 
             {/* Vehicle Type */}
             <div>
-              <div className="relative">
-                <select
-                  className="input appearance-none font-normal text-[var(--foreground)] pr-10"
-                  value={form.vehicleType}
-                  onChange={(e) => handleChange("vehicleType", e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select Vehicle Type
-                  </option>
-                  <option value="Car">Car</option>
-                  <option value="Bike">Bike</option>
-                  <option value="Van">Van</option>
-                </select>
-                <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-[var(--accent)]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </span>
-              </div>
+              <select
+                className="input appearance-none font-normal text-[var(--foreground)]"
+                value={form.vehicleType}
+                onChange={(e) => handleChange("vehicleType", e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Vehicle Type
+                </option>
+                <option value="Car">Car</option>
+                <option value="Bike">Bike</option>
+                <option value="Van">Van</option>
+              </select>
               {errors.vehicleType && (
                 <p className="text-red-500 text-sm">{errors.vehicleType}</p>
               )}
             </div>
 
             {/* Offer Ride */}
-            <div className="mt-2">
+            <div>
               <span className="block text-sm text-[var(--muted)] mb-1">
                 Willing to Offer Rides?
               </span>
@@ -297,10 +271,11 @@ export default function DriverSignup()
                     key={opt}
                     type="button"
                     onClick={() => handleChange("offerRide", opt)}
-                    className={`flex-1 py-2 rounded-lg border text-center transition ${form.offerRide === opt
-                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                      : "border-gray-600 hover:border-[var(--accent)] text-[var(--foreground)]"
-                      }`}
+                    className={`flex-1 py-2 rounded-lg border text-center transition ${
+                      form.offerRide === opt
+                        ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                        : "border-gray-600 hover:border-[var(--accent)] text-[var(--foreground)]"
+                    }`}
                   >
                     {opt === "yes" ? "Yes" : "No"}
                   </button>
@@ -325,18 +300,51 @@ export default function DriverSignup()
                 <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></div>
               </label>
             </div>
-          </div>
 
-          <div className="p-6 border-t border-gray-700">
+            {/* Submit */}
             <button
-              type="button"
-              className="btn-primary w-full"
-              onClick={handleSubmit}
+              type="submit"
+              className="btn-primary w-full flex justify-center items-center gap-2 mt-6"
               disabled={submitting}
             >
-              {submitting ? "Submitting..." : "Continue"}
+              {submitting && (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+              )}
+              Continue
             </button>
-          </div>
+          </form>
+
+          {/* Bottom Message */}
+          {apiMessage.text && (
+            <div
+              className={`text-center text-sm px-4 py-2 ${
+                apiMessage.type === "success"
+                  ? "bg-green-600/20 text-green-400"
+                  : "bg-red-600/20 text-red-400"
+              }`}
+            >
+              {apiMessage.text}
+            </div>
+          )}
         </div>
       </section>
 
@@ -346,13 +354,6 @@ export default function DriverSignup()
         isOpen={showOtp}
         onClose={() => setShowOtp(false)}
         onVerify={handleVerifyOtp}
-      />
-
-      <Popup
-        isOpen={popup.open}
-        type={popup.type}
-        message={popup.message}
-        onClose={() => setPopup({ ...popup, open: false })}
       />
     </main>
   );

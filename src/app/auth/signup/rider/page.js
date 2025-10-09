@@ -5,15 +5,14 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import OtpModal from "@/app/components/OtpModal";
 
-export default function RiderSignup()
-{
+export default function RiderSignup() {
   const [showOtp, setShowOtp] = useState(false);
   const [apiMessage, setApiMessage] = useState({ type: "", text: "" });
   const [submitting, setSubmitting] = useState(false);
   const [userId, setUserId] = useState(null);
 
   const [form, setForm] = useState({
-    empid: "",
+    // empid: "", // 🔸 commented as requested
     fullName: "",
     email: "",
     mobile: "",
@@ -25,32 +24,40 @@ export default function RiderSignup()
 
   const [errors, setErrors] = useState({});
 
-  const handleChange = (field, value) =>
-  {
+  const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  const formatMobile = (value) =>
-  {
+
+  const formatMobile = (value) => {
     let cleaned = value.replace(/[^0-9]/g, "");
     if (cleaned.startsWith("92")) cleaned = "+" + cleaned;
     else if (cleaned.startsWith("0")) cleaned = "+92" + cleaned.slice(1);
     else if (!cleaned.startsWith("+92")) cleaned = "+92" + cleaned;
 
-    // Add dashes
     if (cleaned.length > 3 && cleaned.length <= 6)
       cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3);
     else if (cleaned.length > 6 && cleaned.length <= 10)
       cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3, 6) + "-" + cleaned.slice(6);
     else if (cleaned.length > 10)
       cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3, 6) + "-" + cleaned.slice(6, 13);
-
     return cleaned;
   };
 
-  const validate = () =>
-  {
+
+  const formatCnic = (value) => {
+    let cleaned = value.replace(/[^0-9]/g, "");
+    if (cleaned.length <= 5) return cleaned;
+    if (cleaned.length <= 12)
+      return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+    if (cleaned.length <= 13)
+      return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12)}`;
+    return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12, 13)}`;
+  };
+
+
+  const validate = () => {
     let newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -80,17 +87,17 @@ export default function RiderSignup()
     return newErrors;
   };
 
-  const handleSubmit = async (e) =>
-  {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setApiMessage({ type: "", text: "" });
+
     const newErrors = validate();
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     setSubmitting(true);
-    try
-    {
+    try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,25 +118,20 @@ export default function RiderSignup()
 
       setUserId(data.userId);
       setShowOtp(true);
-      setApiMessage({
-        type: "success",
-        text: "✅ OTP sent! Please verify your email to complete registration.",
-      });
-    } catch (err)
-    {
-      setApiMessage({ type: "error", text: err.message });
-    } finally
-    {
+       setTimeout(() => {
+        router.push("/");
+      }, 2000);
+    } catch (err) {
+      setApiMessage({ type: "error", text: "❌ " + err.message });
+    } finally {
       setSubmitting(false);
     }
   };
 
-  // ✅ OTP verification
-  const handleVerifyOtp = async (otp) =>
-  {
+
+  const handleVerifyOtp = async (otp) => {
     if (!userId) return;
-    try
-    {
+    try {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -143,19 +145,19 @@ export default function RiderSignup()
         type: "success",
         text: "🎉 Registration successful! You can now log in.",
       });
-    } catch (err)
-    {
+    } catch (err) {
       setApiMessage({ type: "error", text: "❌ " + err.message });
     }
   };
 
   return (
-    <main className="bg-[var(--background)] text-[var(--foreground)] h-screen flex flex-col overflow-hidden">
+    <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col overflow-hidden">
       <Navbar />
 
-      <section className="flex-1 flex items-center justify-center px-6 py-8 overflow-hidden">
+   
+      <section className="flex-1 flex items-center justify-center px-6 py-8">
         <div className="w-full max-w-lg bg-[var(--card)] rounded-2xl shadow-soft flex flex-col h-full max-h-[85vh]">
-          {/* Header */}
+         
           <div className="p-6 border-b border-gray-700 text-center">
             <h2 className="text-2xl font-bold">Rider Registration 🙋</h2>
             <p className="text-[var(--muted)] text-sm mt-1">
@@ -163,8 +165,12 @@ export default function RiderSignup()
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+         
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar"
+          >
+            {/* 🔸 Employee ID field commented out
             <div>
               <input
                 type="text"
@@ -174,6 +180,7 @@ export default function RiderSignup()
                 disabled
               />
             </div>
+            */}
 
             <div>
               <input
@@ -183,7 +190,9 @@ export default function RiderSignup()
                 value={form.fullName}
                 onChange={(e) => handleChange("fullName", e.target.value)}
               />
-              {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName}</p>}
+              {errors.fullName && (
+                <p className="text-red-500 text-sm">{errors.fullName}</p>
+              )}
             </div>
 
             <div>
@@ -194,7 +203,9 @@ export default function RiderSignup()
                 value={form.email}
                 onChange={(e) => handleChange("email", e.target.value)}
               />
-              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
 
             <div>
@@ -203,12 +214,16 @@ export default function RiderSignup()
                 placeholder="Mobile Number (+92-312-8907654)"
                 className="input"
                 value={form.mobile}
-                onChange={(e) => handleChange("mobile", formatMobile(e.target.value))}
+                onChange={(e) =>
+                  handleChange("mobile", formatMobile(e.target.value))
+                }
               />
-              {errors.mobile && <p className="text-red-500 text-sm">{errors.mobile}</p>}
+              {errors.mobile && (
+                <p className="text-red-500 text-sm">{errors.mobile}</p>
+              )}
             </div>
 
-            {/* Department Dropdown */}
+            {/* Department */}
             <div className="relative">
               <select
                 className="input appearance-none font-normal text-[var(--foreground)] pr-10"
@@ -250,7 +265,9 @@ export default function RiderSignup()
                 value={form.designation}
                 onChange={(e) => handleChange("designation", e.target.value)}
               />
-              {errors.designation && <p className="text-red-500 text-sm">{errors.designation}</p>}
+              {errors.designation && (
+                <p className="text-red-500 text-sm">{errors.designation}</p>
+              )}
             </div>
 
             <div>
@@ -261,7 +278,9 @@ export default function RiderSignup()
                 value={form.password}
                 onChange={(e) => handleChange("password", e.target.value)}
               />
-              {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password}</p>
+              )}
             </div>
 
             <div>
@@ -270,32 +289,17 @@ export default function RiderSignup()
                 placeholder="CNIC (12345-6789012-3)"
                 className="input"
                 value={form.cnic}
-                onChange={(e) =>
-                  handleChange("cnic", e.target.value.replace(/[^0-9-]/g, ""))
-                }
+                onChange={(e) => handleChange("cnic", formatCnic(e.target.value))}
               />
-              {errors.cnic && <p className="text-red-500 text-sm">{errors.cnic}</p>}
+              {errors.cnic && (
+                <p className="text-red-500 text-sm">{errors.cnic}</p>
+              )}
             </div>
-          </form>
 
-          {/* Bottom Message */}
-          {apiMessage.text && (
-            <div
-              className={`text-center text-sm px-4 py-2 ${apiMessage.type === "success"
-                ? "bg-green-600/20 text-green-400"
-                : "bg-red-600/20 text-red-400"
-                }`}
-            >
-              {apiMessage.text}
-            </div>
-          )}
-
-          {/* Submit */}
-          <div className="p-6 border-t border-gray-700">
+       
             <button
               type="submit"
-              className="btn-primary w-full flex justify-center items-center gap-2"
-              onClick={handleSubmit}
+              className="btn-primary w-full flex justify-center items-center gap-2 mt-6"
               disabled={submitting}
             >
               {submitting && (
@@ -322,7 +326,20 @@ export default function RiderSignup()
               )}
               Continue
             </button>
-          </div>
+          </form>
+
+          {/* Bottom Message */}
+          {apiMessage.text && (
+            <div
+              className={`text-center text-sm px-4 py-2 ${
+                apiMessage.type === "success"
+                  ? "bg-green-600/20 text-green-400"
+                  : "bg-red-600/20 text-red-400"
+              }`}
+            >
+              {apiMessage.text}
+            </div>
+          )}
         </div>
       </section>
 
