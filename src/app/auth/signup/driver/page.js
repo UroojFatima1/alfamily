@@ -5,7 +5,8 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import OtpModal from "@/app/components/OtpModal";
 
-export default function DriverSignup() {
+export default function DriverSignup()
+{
   const [showOtp, setShowOtp] = useState(false);
   const [apiMessage, setApiMessage] = useState({ type: "", text: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -29,13 +30,14 @@ export default function DriverSignup() {
 
   const [errors, setErrors] = useState({});
 
-  const handleChange = (field, value) => {
+  const handleChange = (field, value) =>
+  {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // ✅ Format Mobile (+92-XXX-XXXXXXX)
-  const formatMobile = (value) => {
+  const formatMobile = (value) =>
+  {
     let cleaned = value.replace(/[^0-9]/g, "");
     if (cleaned.startsWith("92")) cleaned = "+" + cleaned;
     else if (cleaned.startsWith("0")) cleaned = "+92" + cleaned.slice(1);
@@ -50,8 +52,9 @@ export default function DriverSignup() {
     return cleaned;
   };
 
-  // ✅ Format CNIC (12345-6789012-3)
-  const formatCnic = (value) => {
+
+  const formatCnic = (value) =>
+  {
     let cleaned = value.replace(/[^0-9]/g, "");
     if (cleaned.length <= 5) return cleaned;
     if (cleaned.length <= 12)
@@ -61,8 +64,9 @@ export default function DriverSignup() {
     return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12, 13)}`;
   };
 
-  // ✅ Validation
-  const validate = () => {
+
+  const validate = () =>
+  {
     let newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -97,8 +101,8 @@ export default function DriverSignup() {
     return newErrors;
   };
 
-  // ✅ Submit
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) =>
+  {
     e.preventDefault();
     setApiMessage({ type: "", text: "" });
 
@@ -107,7 +111,8 @@ export default function DriverSignup() {
     if (Object.keys(newErrors).length > 0) return;
 
     setSubmitting(true);
-    try {
+    try
+    {
       const payload = {
         role: "driver",
         fullName: form.fullName,
@@ -140,17 +145,21 @@ export default function DriverSignup() {
         type: "success",
         text: "✅ OTP sent! Please verify your email to complete registration.",
       });
-    } catch (err) {
+    } catch (err)
+    {
       setApiMessage({ type: "error", text: err.message });
-    } finally {
+    } finally
+    {
       setSubmitting(false);
     }
   };
 
-  // ✅ OTP Verify
-  const handleVerifyOtp = async (otp) => {
+
+  const handleVerifyOtp = async (otp) =>
+  {
     if (!userId) return;
-    try {
+    try
+    {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -164,7 +173,8 @@ export default function DriverSignup() {
         type: "success",
         text: "🎉 Registration successful! You can now log in.",
       });
-    } catch (err) {
+    } catch (err)
+    {
       setApiMessage({ type: "error", text: "❌ " + err.message });
     }
   };
@@ -205,7 +215,8 @@ export default function DriverSignup() {
                   placeholder={placeholder}
                   className="input"
                   value={form[key]}
-                  onChange={(e) => {
+                  onChange={(e) =>
+                  {
                     if (key === "mobile")
                       handleChange("mobile", formatMobile(e.target.value));
                     else if (key === "cnic")
@@ -271,11 +282,10 @@ export default function DriverSignup() {
                     key={opt}
                     type="button"
                     onClick={() => handleChange("offerRide", opt)}
-                    className={`flex-1 py-2 rounded-lg border text-center transition ${
-                      form.offerRide === opt
-                        ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                        : "border-gray-600 hover:border-[var(--accent)] text-[var(--foreground)]"
-                    }`}
+                    className={`flex-1 py-2 rounded-lg border text-center transition ${form.offerRide === opt
+                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                      : "border-gray-600 hover:border-[var(--accent)] text-[var(--foreground)]"
+                      }`}
                   >
                     {opt === "yes" ? "Yes" : "No"}
                   </button>
@@ -336,11 +346,10 @@ export default function DriverSignup() {
           {/* Bottom Message */}
           {apiMessage.text && (
             <div
-              className={`text-center text-sm px-4 py-2 ${
-                apiMessage.type === "success"
-                  ? "bg-green-600/20 text-green-400"
-                  : "bg-red-600/20 text-red-400"
-              }`}
+              className={`text-center text-sm px-4 py-2 ${apiMessage.type === "success"
+                ? "bg-green-600/20 text-green-400"
+                : "bg-red-600/20 text-red-400"
+                }`}
             >
               {apiMessage.text}
             </div>
