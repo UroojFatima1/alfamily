@@ -5,14 +5,17 @@ export function middleware(req)
     const url = req.nextUrl.clone();
     const { pathname } = url;
 
-    // Read cookies
-    const token = req.cookies.get("token")?.value || "";
-    const userCookie = req.cookies.get("user")?.value || "";
+    const token = req.cookies.get("token")?.value;
+    const userCookie = req.cookies.get("user")?.value;
 
-    // No token → redirect to homepage (login modal will appear)
+    // 🚫 If no token → redirect to root (login modal shows there)
     if (!token)
     {
-        if (!pathname.startsWith("/_next") && !pathname.startsWith("/api"))
+        if (
+            !pathname.startsWith("/_next") &&
+            !pathname.startsWith("/api") &&
+            pathname !== "/"
+        )
         {
             url.pathname = "/";
             return NextResponse.redirect(url);
@@ -20,21 +23,21 @@ export function middleware(req)
         return NextResponse.next();
     }
 
-    // Parse role from cookie
+    // ✅ Extract role from cookie JSON (no decoding)
     let userRole = "";
     try
     {
         if (userCookie)
         {
-            const parsed = JSON.parse(decodeURIComponent(userCookie));
-            userRole = parsed?.role || parsed?.user?.role || "";
+            const parsed = JSON.parse(userCookie);
+            userRole = parsed.role || parsed.user?.role || "";
         }
     } catch (err)
     {
-        console.error("❌ Cookie parse error:", err);
+        console.error("❌ Failed to parse user cookie:", err);
     }
 
-    // 🚦 Route protection logic
+    // 🚦 Role-based access control
     if (userRole === "driver" && pathname.startsWith("/rider"))
     {
         url.pathname = "/driver/home";
@@ -50,7 +53,7 @@ export function middleware(req)
     return NextResponse.next();
 }
 
-// ✅ Middleware will run for all driver/rider pages
+// ✅ Apply middleware only to protected routes
 export const config = {
     matcher: [
         "/rider",
