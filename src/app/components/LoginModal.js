@@ -71,17 +71,13 @@ export default function LoginModal({ isOpen, onClose })
 
       if (!res.ok) throw new Error(data?.error || "Invalid credentials");
 
-      // ✅ Extract role correctly (your API nests it under user.role)
       const role = data?.user?.role || data?.role || "rider";
 
-      // ✅ Store data locally for frontend
       localStorage.setItem("user", JSON.stringify(data));
 
-      // ✅ Save in cookies for middleware
       document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
-      document.cookie = `user=${encodeURIComponent(
-        JSON.stringify(data.user || {})
-      )}; path=/; secure; samesite=strict`;
+      document.cookie = `user=${JSON.stringify(data)}; path=/; secure; samesite=strict`;
+
 
       setSuccess("✅ Login successful!");
       setTimeout(() =>
