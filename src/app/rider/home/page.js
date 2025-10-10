@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
@@ -10,37 +10,54 @@ export default function RiderDashboard() {
   const [showRequest, setShowRequest] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [activeRequests, setActiveRequests] = useState([]);
+  const [fullName, setFullName] = useState("User");
+  const [department, setDepartment] = useState("IT Department");
+
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const userInfo = storedUser?.user || {};
+      if (userInfo.fullName) setFullName(userInfo.fullName);
+      if (userInfo.department) setDepartment(userInfo.department);
+    } catch (err) {
+      console.error("Error parsing user data:", err);
+    }
+  }, []);
 
   const pastRides = [
     {
       id: 1,
-      name: "Mike Wilson",
+      name: fullName,
       dept: "IT Department",
       pickup: "Admin Building",
-      drop: "Bank Alfalah BA building",
+      drop: "Bank Alfalah BA Building",
       time: "1:15 PM",
       status: "Completed",
     },
     {
       id: 2,
-      name: "Mike Wilson",
-      dept: "IT Department",
-      pickup: "Admin Building",
-      drop: "Bank Alfalah BA building",
-      time: "1:15 PM",
+      name: fullName,
+      dept: "Finance",
+      pickup: "Main Office",
+      drop: "Clifton Block 5",
+      time: "5:45 PM",
       status: "Completed",
     },
   ];
 
   const handleSuccess = (rideForm) => {
-    
     const newRide = {
       id: Date.now(),
-      name: "Sarah Johnson",
-      dept: "IT Department",
-      pickup: rideForm.pickup,
-      drop: rideForm.drop,
-      time: rideForm.time,
+      name: fullName || "User",
+      dept: department || "IT Department",
+      pickup: rideForm?.pickupLocation?.address || "Not specified",
+      drop: rideForm?.dropLocation?.address || "Not specified",
+      pickupCoords: rideForm?.pickupLocation || null,
+      dropCoords: rideForm?.dropLocation || null,
+      time: new Date(rideForm?.dateTime).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       status: "Pending",
     };
 
@@ -66,10 +83,12 @@ export default function RiderDashboard() {
           </div>
         )}
 
+        {/* Welcome Section */}
         <div className="bg-[var(--card)] rounded-2xl p-6 shadow-soft">
           <h2 className="text-2xl font-bold">
-            Welcome <span className="text-[var(--accent)]">Sarah 👋</span>
+            Welcome <span className="text-[var(--accent)]">{fullName} 👋</span>
           </h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">{department}</p>
           <p className="mt-2 text-[var(--muted)]">
             Ready for your next ride?{" "}
             <button className="text-[var(--accent)] font-semibold hover:underline">
@@ -78,6 +97,7 @@ export default function RiderDashboard() {
           </p>
         </div>
 
+        {/* Request Button */}
         <div className="flex justify-center">
           <button
             className="btn-primary px-8 py-3 text-lg flex items-center gap-2"
@@ -87,6 +107,7 @@ export default function RiderDashboard() {
           </button>
         </div>
 
+        {/* Active Rides */}
         <div>
           <h3 className="text-xl font-bold mb-4">My Ride Requests</h3>
           {activeRequests.length === 0 ? (
@@ -98,28 +119,23 @@ export default function RiderDashboard() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               {activeRequests.map((ride) => (
-                <div
+                <RideCard
                   key={ride.id}
-                  className="bg-[var(--card)] p-4 rounded-xl shadow-md flex items-center justify-between"
-                >
-                  <RideCard ride={ride} role="rider" />
-                  <button
-                    onClick={() => handleCancel(ride.id)}
-                    className="ml-4 px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                  ride={ride}
+                  role="rider"
+                  onCancel={handleCancel}
+                />
               ))}
             </div>
           )}
         </div>
 
+        {/* Past Rides */}
         <div>
           <h3 className="text-xl font-bold mb-4">Past Rides</h3>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {pastRides.map((ride) => (
               <RideCard key={ride.id} ride={ride} role="rider" />
             ))}

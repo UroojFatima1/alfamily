@@ -23,14 +23,13 @@ export default function LoginModal({ isOpen, onClose }) {
   const validate = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passwordRegex = /^.{6,}$/; // Allow 6+ chars for now
 
     if (!form.email) newErrors.email = "Email is required";
     else if (!emailRegex.test(form.email)) newErrors.email = "Invalid email format";
 
     if (!isForgot) {
       if (!form.password) newErrors.password = "Password is required";
-      else if (!passwordRegex.test(form.password))
+      else if (form.password.length < 6)
         newErrors.password = "Password must be at least 6 characters";
     }
 
@@ -57,33 +56,24 @@ export default function LoginModal({ isOpen, onClose }) {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
+        body: JSON.stringify(form),
       });
 
       const data = await res.json();
 
       if (!res.ok) throw new Error(data?.error || "Invalid credentials");
 
-      // Save token + user info in localStorage
-      const role = data?.role || (form.email.includes("driver") ? "driver" : "rider");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          email: data.email,
-          role,
-          token: data.token,
-        })
-      );
+      
+      localStorage.setItem("user", JSON.stringify(data));
+
+      const role = data.role || "rider";
 
       setSuccess("✅ Login successful!");
       setTimeout(() => {
         setForm({ email: "", password: "" });
         onClose();
         router.push(`/${role}/home`);
-      }, 1500);
+      }, 1200);
     } catch (err) {
       setApiError(err.message);
     } finally {
@@ -110,12 +100,10 @@ export default function LoginModal({ isOpen, onClose }) {
             onChange={(e) => handleChange("email", e.target.value)}
             className="input"
           />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email}</p>
-          )}
+          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
         </div>
 
-
+        {/* Password */}
         {!isForgot && (
           <div>
             <input
@@ -131,15 +119,11 @@ export default function LoginModal({ isOpen, onClose }) {
           </div>
         )}
 
+        {/* Messages */}
+        {apiError && <p className="text-red-500 text-center text-sm">{apiError}</p>}
+        {success && <p className="text-green-500 text-center text-sm">{success}</p>}
 
-        {apiError && (
-          <p className="text-red-500 text-center text-sm">{apiError}</p>
-        )}
-        {success && (
-          <p className="text-green-500 text-center text-sm">{success}</p>
-        )}
-
-
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
@@ -170,37 +154,21 @@ export default function LoginModal({ isOpen, onClose }) {
           {isForgot ? "Send Reset Link" : "Login"}
         </button>
 
-        {!isForgot ? (
-          <p className="text-sm text-center">
-            <button
-              type="button"
-              className="text-blue-500 hover:underline"
-              onClick={() => {
-                setIsForgot(true);
-                setErrors({});
-                setSuccess("");
-                setApiError("");
-              }}
-            >
-              Forgot Password?
-            </button>
-          </p>
-        ) : (
-          <p className="text-sm text-center">
-            <button
-              type="button"
-              className="text-blue-500 hover:underline"
-              onClick={() => {
-                setIsForgot(false);
-                setErrors({});
-                setSuccess("");
-                setApiError("");
-              }}
-            >
-              Back to Login
-            </button>
-          </p>
-        )}
+        {/* Forgot / Back */}
+        <p className="text-sm text-center">
+          <button
+            type="button"
+            className="text-blue-500 hover:underline"
+            onClick={() => {
+              setIsForgot(!isForgot);
+              setErrors({});
+              setSuccess("");
+              setApiError("");
+            }}
+          >
+            {isForgot ? "Back to Login" : "Forgot Password?"}
+          </button>
+        </p>
       </form>
     </BaseModal>
   );
