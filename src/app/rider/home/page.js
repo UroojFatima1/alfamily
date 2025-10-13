@@ -5,21 +5,28 @@ import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
 import RideRequestModal from "../request/page";
+import { useRouter } from "next/navigation";
 
-export default function RiderDashboard() {
+export default function RiderDashboard()
+{
+  const router = useRouter();
+
   const [showRequest, setShowRequest] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [activeRequests, setActiveRequests] = useState([]);
   const [fullName, setFullName] = useState("User");
   const [department, setDepartment] = useState("IT Department");
 
-  useEffect(() => {
-    try {
+  useEffect(() =>
+  {
+    try
+    {
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const userInfo = storedUser?.user || {};
-      if (userInfo.fullName) setFullName(userInfo.fullName);
-      if (userInfo.department) setDepartment(userInfo.department);
-    } catch (err) {
+      const userInfo = storedUser?.user || storedUser;
+      if (userInfo?.fullName) setFullName(userInfo.fullName);
+      if (userInfo?.department) setDepartment(userInfo.department);
+    } catch (err)
+    {
       console.error("Error parsing user data:", err);
     }
   }, []);
@@ -45,15 +52,14 @@ export default function RiderDashboard() {
     },
   ];
 
-  const handleSuccess = (rideForm) => {
+  const handleSuccess = (rideForm) =>
+  {
     const newRide = {
       id: Date.now(),
       name: fullName || "User",
       dept: department || "IT Department",
       pickup: rideForm?.pickupLocation?.address || "Not specified",
       drop: rideForm?.dropLocation?.address || "Not specified",
-      pickupCoords: rideForm?.pickupLocation || null,
-      dropCoords: rideForm?.dropLocation || null,
       time: new Date(rideForm?.dateTime).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -66,10 +72,16 @@ export default function RiderDashboard() {
     setTimeout(() => setSuccessMessage(""), 3000);
   };
 
-  const handleCancel = (id) => {
+  const handleCancel = (id) =>
+  {
     setActiveRequests((prev) => prev.filter((ride) => ride.id !== id));
     setSuccessMessage("❌ Ride request cancelled.");
     setTimeout(() => setSuccessMessage(""), 3000);
+  };
+
+  const handleSwitchToDriver = () =>
+  {
+    router.push("/rider/profile#bottom");
   };
 
   return (
@@ -91,7 +103,10 @@ export default function RiderDashboard() {
           <p className="mt-1 text-sm text-[var(--muted)]">{department}</p>
           <p className="mt-2 text-[var(--muted)]">
             Ready for your next ride?{" "}
-            <button className="text-[var(--accent)] font-semibold hover:underline">
+            <button
+              onClick={handleSwitchToDriver}
+              className="text-[var(--accent)] font-semibold hover:underline"
+            >
               Switch to Driver?
             </button>
           </p>

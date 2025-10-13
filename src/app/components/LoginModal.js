@@ -1,5 +1,5 @@
 "use client";
-
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BaseModal from "@/app/components/BaseModal";
@@ -7,6 +7,7 @@ import BaseModal from "@/app/components/BaseModal";
 export default function LoginModal({ isOpen, onClose })
 {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState("");
@@ -121,16 +122,23 @@ export default function LoginModal({ isOpen, onClose })
 
         {/* Password */}
         {!isForgot && (
-          <div>
+          <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={form.password}
               onChange={(e) => handleChange("password", e.target.value)}
-              className="input"
+              className="input pr-10"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-3 flex items-center text-white"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
             )}
           </div>
         )}

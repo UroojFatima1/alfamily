@@ -5,31 +5,40 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Car, Menu, X } from "lucide-react";
 
-export default function GlobalNavbar() {
+export default function GlobalNavbar()
+{
   const router = useRouter();
   const pathname = usePathname();
   const [role, setRole] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
+    if (storedUser)
+    {
+      try
+      {
         const parsed = JSON.parse(storedUser);
-        setRole(parsed.role || null);
-      } catch {
+        const userRole = parsed.role || parsed.user?.role || "rider";
+        setRole(userRole);
+      } catch
+      {
         setRole(null);
       }
     }
   }, []);
 
-  const handleLogout = () => {
+
+  const handleLogout = () =>
+  {
     localStorage.removeItem("user");
     setRole(null);
     router.replace("/");
   };
 
-  const getPath = (page) => {
+  const getPath = (page) =>
+  {
     if (!role) return "/";
     return `/${role}/${page}`;
   };
@@ -56,9 +65,8 @@ export default function GlobalNavbar() {
               <Link
                 key={link.name}
                 href={link.path}
-                className={`link-hover ${
-                  pathname === link.path ? "text-yellow-400 font-semibold" : ""
-                }`}
+                className={`link-hover ${pathname === link.path ? "text-yellow-400 font-semibold" : ""
+                  }`}
               >
                 {link.name}
               </Link>
@@ -88,15 +96,15 @@ export default function GlobalNavbar() {
               key={link.name}
               href={link.path}
               onClick={() => setMenuOpen(false)}
-              className={`block ${
-                pathname === link.path ? "text-yellow-400 font-semibold" : "text-white"
-              }`}
+              className={`block ${pathname === link.path ? "text-yellow-400 font-semibold" : "text-white"
+                }`}
             >
               {link.name}
             </Link>
           ))}
           <button
-            onClick={() => {
+            onClick={() =>
+            {
               setMenuOpen(false);
               handleLogout();
             }}

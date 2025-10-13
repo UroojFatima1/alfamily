@@ -5,28 +5,33 @@ import { useState, useEffect, useMemo } from "react";
 import { MapPin, LocateFixed } from "lucide-react";
 import BaseModal from "@/app/components/BaseModal";
 
-// ✅ Safe dynamic imports (no SSR errors)
+
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 
 const karachiCenter = [24.8607, 67.0011];
 
-async function getAddress(lat, lon) {
-  try {
+async function getAddress(lat, lon)
+{
+  try
+  {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
     const data = await res.json();
     return data.display_name || "Unknown location";
-  } catch {
+  } catch
+  {
     return "Unknown location";
   }
 }
 
 // Map click listener
-function LocationPicker({ type, setForm }) {
+function LocationPicker({ type, setForm })
+{
   const { useMapEvents } = require("react-leaflet");
   useMapEvents({
-    click: async (e) => {
+    click: async (e) =>
+    {
       const { lat, lng } = e.latlng;
       const address = await getAddress(lat, lng);
       setForm((prev) => ({
@@ -39,7 +44,8 @@ function LocationPicker({ type, setForm }) {
   return null;
 }
 
-export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
+export default function RideRequestModal({ isOpen, onClose, onSuccess })
+{
   const [form, setForm] = useState({
     pickup: "",
     drop: "",
@@ -59,12 +65,14 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
   const [userRole, setUserRole] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     setUserRole(storedUser?.user?.role || "");
   }, []);
 
-  const yellowIcon = useMemo(() => {
+  const yellowIcon = useMemo(() =>
+  {
     if (typeof window === "undefined") return null;
     const L = require("leaflet");
     return new L.Icon({
@@ -79,7 +87,8 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
 
   if (!isOpen) return null;
 
-  const validate = () => {
+  const validate = () =>
+  {
     const newErrors = {};
     if (!form.pickup) newErrors.pickup = "Pickup location is required";
     if (!form.drop) newErrors.drop = "Drop location is required";
@@ -88,13 +97,15 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
     return newErrors;
   };
 
-  
-  const getCurrentLocation = (type) => {
+
+  const getCurrentLocation = (type) =>
+  {
     if (!navigator.geolocation) return;
     setLocating((prev) => ({ ...prev, [type]: true }));
 
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      async (pos) =>
+      {
         const { latitude, longitude } = pos.coords;
         const address = await getAddress(latitude, longitude);
 
@@ -110,11 +121,13 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
     );
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) =>
+  {
     e.preventDefault();
     setApiError("");
 
-    if (userRole === "driver") {
+    if (userRole === "driver")
+    {
       setApiError("Drivers cannot request rides.");
       return;
     }
@@ -143,7 +156,8 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const token = storedUser?.token;
 
-    try {
+    try
+    {
       setLoading(true);
       const res = await fetch("/api/rides/request", {
         method: "POST",
@@ -159,10 +173,12 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
 
       onSuccess(payload);
       onClose();
-    } catch (err) {
+    } catch (err)
+    {
       console.error("❌ API Error:", err);
       setApiError(err.message);
-    } finally {
+    } finally
+    {
       setLoading(false);
     }
   };
@@ -238,18 +254,16 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={() => setSelectedMap("pickup")}
-                className={`px-2 py-1 text-xs rounded ${
-                  selectedMap === "pickup" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"
-                }`}
+                className={`px-2 py-1 text-xs rounded ${selectedMap === "pickup" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"
+                  }`}
               >
                 Pickup
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedMap("drop")}
-                className={`px-2 py-1 text-xs rounded ${
-                  selectedMap === "drop" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"
-                }`}
+                className={`px-2 py-1 text-xs rounded ${selectedMap === "drop" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"
+                  }`}
               >
                 Drop
               </button>
@@ -331,9 +345,8 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess }) {
         <button
           type="submit"
           disabled={loading}
-          className={`btn-primary w-full flex justify-center items-center ${
-            userRole === "driver" ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className={`btn-primary w-full flex justify-center items-center ${userRole === "driver" ? "opacity-50 cursor-not-allowed" : ""
+            }`}
         >
           {loading ? "Submitting..." : userRole === "driver" ? "Drivers cannot request rides" : "Submit Request"}
         </button>

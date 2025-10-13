@@ -1,10 +1,20 @@
+"use client";
+import { useRef } from "react";
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RoleSwitcher from "@/app/components/RoleSwitcher";
 import OverviewCard from "@/app/components/OverviewCard";
 import AvailableRides from "@/app/components/AvailableRides";
 
-export default function RequestRide() {
+export default function RequestRide()
+{
+  const ridesSectionRef = useRef(null);
+
+  const scrollToBottom = () =>
+  {
+    ridesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const rides = [
     {
       id: 1,
@@ -57,18 +67,16 @@ export default function RequestRide() {
       <GlobalNavbar />
 
       <section className="flex-1 px-6 py-8 space-y-10 max-w-6xl mx-auto w-full">
-        {/* Greeting */}
         <div>
           <h2 className="text-3xl font-bold">Welcome Sarah 👋</h2>
           <p className="text-[var(--muted)] mt-1">Ready for your next ride?</p>
         </div>
 
-        {/* Dashboard Section */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Your Dashboard</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             <div className="bg-[var(--card)] rounded-2xl shadow-soft p-6 flex flex-col">
-              <RoleSwitcher />
+              <RoleSwitcher onScrollToBottom={scrollToBottom} />
             </div>
             <div className="bg-[var(--card)] rounded-2xl shadow-soft p-6 flex flex-col">
               <OverviewCard availableSeats={17} activeDrivers={6} />
@@ -76,8 +84,9 @@ export default function RequestRide() {
           </div>
         </div>
 
-        {/* Available Rides */}
-        <AvailableRides rides={rides} />
+        <div ref={ridesSectionRef}>
+          <AvailableRides rides={rides} />
+        </div>
       </section>
 
       <Footer />

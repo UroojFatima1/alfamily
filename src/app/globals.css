@@ -119,6 +119,10 @@ input[type="time"]::-moz-focus-inner {
   @apply hover:text-[var(--primary)];
 }
 
+.eye-icon {
+  color: white;
+}
+
 .link-hover:hover {
   color: #facc15;
   transition: color 0.2s ease-in-out;

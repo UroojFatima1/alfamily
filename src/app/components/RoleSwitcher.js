@@ -2,22 +2,28 @@
 import { useState } from "react";
 import { Car, User } from "lucide-react";
 
-export default function RoleSwitcher({ activeRole = "rider" }) {
- 
-  const [selected, setSelected] = useState(activeRole); // driver pre-selected
+export default function RoleSwitcher({ activeRole = "rider", onRoleChange })
+{
+  const [selected, setSelected] = useState(activeRole);
 
-  const handleSelect = (role) => {
+  const handleSelect = (role) =>
+  {
     setSelected(role);
-    if (onRoleChange) onRoleChange(role);
 
-    if (role === "driver") {
-      // Scroll to driver form section
+    if (typeof onRoleChange === "function")
+    {
+      onRoleChange(role);
+    }
+
+    if (role === "driver")
+    {
       const driverSection = document.getElementById("driver-form");
-      if (driverSection) {
+      if (driverSection)
+      {
         driverSection.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-    } else {
-      // Just scroll to top for rider view
+    } else
+    {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -33,10 +39,9 @@ export default function RoleSwitcher({ activeRole = "rider" }) {
         <button
           onClick={() => handleSelect("rider")}
           className={`rounded-xl p-5 flex flex-col items-center justify-center text-center border transition shadow-inner
-            ${
-              selected === "rider"
-                ? "bg-[var(--accent)] text-[var(--background)] border-[var(--accent)] shadow-md"
-                : "bg-[var(--background)] border-gray-700 hover:border-[var(--accent)]"
+            ${selected === "rider"
+              ? "bg-[var(--accent)] text-[var(--background)] border-[var(--accent)] shadow-md"
+              : "bg-[var(--background)] border-gray-700 hover:border-[var(--accent)]"
             }`}
         >
           <User className="w-8 h-8 mb-2" />
@@ -50,10 +55,9 @@ export default function RoleSwitcher({ activeRole = "rider" }) {
         <button
           onClick={() => handleSelect("driver")}
           className={`rounded-xl p-5 flex flex-col items-center justify-center text-center border transition shadow-inner
-            ${
-              selected === "driver"
-                ? "bg-[var(--accent)] text-[var(--background)] border-[var(--accent)] shadow-md"
-                : "bg-[var(--background)] border-gray-700 hover:border-[var(--accent)]"
+            ${selected === "driver"
+              ? "bg-[var(--accent)] text-[var(--background)] border-[var(--accent)] shadow-md"
+              : "bg-[var(--background)] border-gray-700 hover:border-[var(--accent)]"
             }`}
         >
           <Car className="w-8 h-8 mb-2" />

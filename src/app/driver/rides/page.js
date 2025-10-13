@@ -1,4 +1,4 @@
-// src/app/driver/page.js
+
 import Footer from "@/app/components/Footer";
 import RoleSwitcher from "@/app/components/RoleSwitcher";
 import DemandSummary from "@/app/components/DemandSummary";
@@ -6,7 +6,8 @@ import OfferRideCard from "@/app/components/OfferRideCard";
 import RiderRequestList from "@/app/components/RiderRequestList";
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 
-export default function OfferRides() {
+export default function OfferRides()
+{
   const demand = {
     totalRiders: 9,
     matching: 3,
