@@ -55,14 +55,12 @@ export default function OfferRides()
           <p className="text-[var(--muted)] mt-1">Ready for your next ride?</p>
         </div>
 
-        {/* Role Switcher */}
         <RoleSwitcher activeRole="driver" />
 
-        {/* Demand Summary + Ride Info */}
         <DemandSummary {...demand} />
         <OfferRideCard {...yourRide} />
 
-        {/* Current Requests */}
+        \
         <RiderRequestList requests={requests} />
       </section>
 
