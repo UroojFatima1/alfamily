@@ -58,13 +58,12 @@ export default function Profile({ user, initialRole = "rider" })
     }
   };
 
-  // ✅ Utility: Update cookie and localStorage
   const updateUserRole = (newRole, driverPayload = null) =>
   {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const updatedUser = { ...storedUser, role: newRole };
     localStorage.setItem("user", JSON.stringify(updatedUser));
-    document.cookie = `user=${encodeURIComponent(JSON.stringify(updatedUser))}; path=/; max-age=31536000; SameSite=Lax`;
+    document.cookie = `user=${JSON.stringify(updatedUser)}; path=/; max-age=31536000; SameSite=Lax`;
 
     if (driverPayload)
     {
@@ -72,7 +71,18 @@ export default function Profile({ user, initialRole = "rider" })
     }
   };
 
-  // Switch to Driver
+  const logoutAfterSwitch = () =>
+  {
+    setTimeout(() =>
+    {
+      localStorage.removeItem("user");
+      localStorage.removeItem("driverData");
+      document.cookie = "user=; path=/; max-age=0";
+      router.push("/");
+    }, 5000);
+  };
+
+
   const switchToDriver = async (driverPayload) =>
   {
     setLoading(true);
@@ -94,12 +104,12 @@ export default function Profile({ user, initialRole = "rider" })
       const data = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(data.error || "Failed to switch role");
 
-      // ✅ Update storage + cookie
       updateUserRole("driver", driverPayload);
 
       setRole("driver");
-      setMessage("✅ Successfully switched to Driver!");
-      router.push("/driver/home");
+      setMessage("✅ Successfully switched to Driver! Logging out...");
+
+      logoutAfterSwitch();
     } catch (err)
     {
       setMessage(`❌ ${err.message}`);
@@ -133,12 +143,12 @@ export default function Profile({ user, initialRole = "rider" })
       const data = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(data.error || "Failed to switch to rider");
 
-      // ✅ Update storage + cookie
       updateUserRole("rider");
 
       setRole("rider");
-      setMessage("✅ Switched back to Rider!");
-      router.push("/rider/home");
+      setMessage("✅ Switched back to Rider! Logging out...");
+
+      logoutAfterSwitch();
     } catch (err)
     {
       setMessage(`❌ ${err.message}`);

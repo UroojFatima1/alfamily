@@ -1,17 +1,16 @@
+'use client';
 
 import dynamic from "next/dynamic";
 import { useState, useMemo } from "react";
 import { LocateFixed } from "lucide-react";
 import BaseModal from "@/app/components/BaseModal";
 
-// Dynamic imports for Leaflet (avoid SSR issues)
 const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
 
 const karachiCenter = [24.8607, 67.0011];
 
-// Reverse geocoding helper
 async function getAddress(lat, lon)
 {
   try
