@@ -101,7 +101,7 @@ export default function DriverDashboard()
           <p className="mt-1 text-sm text-[var(--muted)]">{department}</p>
           <p className="mt-2 text-[var(--muted)]">
             Want to request a ride instead?{" "}
-            <button onClick={handleSwitchToDriver}
+            <button onClick={handleSwitchToRider}
               className="text-[var(--accent)] font-semibold hover:underline">
               Switch to Rider?
             </button>
