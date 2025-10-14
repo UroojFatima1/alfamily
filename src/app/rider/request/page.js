@@ -25,7 +25,6 @@ async function getAddress(lat, lon)
   }
 }
 
-// Map click listener
 function LocationPicker({ type, setForm })
 {
   const { useMapEvents } = require("react-leaflet");
@@ -170,7 +169,7 @@ export default function RideRequestModal({ isOpen, onClose, onSuccess })
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Request failed");
-
+      console.log("✅ Ride requested:", data);
       onSuccess(payload);
       onClose();
     } catch (err)

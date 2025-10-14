@@ -9,7 +9,8 @@ export default function RequestRideCard({
   location,
   time,
   seatsLeft,
-}) {
+})
+{
   return (
     <div className="bg-[var(--card)] rounded-xl shadow-soft p-5 space-y-3">
       {/* Top Section: Avatar + Name + Rating */}
@@ -52,11 +53,10 @@ export default function RequestRideCard({
 
       {/* Action Button */}
       <button
-        className={`w-full py-2 rounded-lg font-semibold ${
-          seatsLeft > 0
+        className={`w-full py-2 rounded-lg font-semibold ${seatsLeft > 0
             ? "bg-[var(--accent)] text-black hover:bg-yellow-400"
             : "bg-gray-700 text-gray-400 cursor-not-allowed"
-        }`}
+          }`}
         disabled={seatsLeft === 0}
       >
         {seatsLeft > 0 ? "Request Seat" : "Request Seat"}

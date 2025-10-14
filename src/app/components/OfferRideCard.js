@@ -1,6 +1,7 @@
 "use client";
 
-export default function OfferRideCard({ vehicle, seatsFilled, totalSeats, bookedRiders }) {
+export default function OfferRideCard({ vehicle, seatsFilled, totalSeats, bookedRiders })
+{
   return (
     <div className="bg-[var(--card)] rounded-xl p-6 shadow-soft">
       <h4 className="text-lg font-semibold mb-3">Your Ride <span className="text-yellow-400 text-sm ml-2">• Offered</span></h4>
@@ -26,7 +27,6 @@ export default function OfferRideCard({ vehicle, seatsFilled, totalSeats, booked
         ))}
       </div>
 
-      <button className="btn-primary w-full">View Requests</button>
     </div>
   );
 }

@@ -1,19 +1,15 @@
 "use client";
-import { useRef } from "react";
+
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RoleSwitcher from "@/app/components/RoleSwitcher";
 import OverviewCard from "@/app/components/OverviewCard";
 import AvailableRides from "@/app/components/AvailableRides";
+import { useRouter } from "next/navigation";
 
 export default function RequestRide()
 {
-  const ridesSectionRef = useRef(null);
-
-  const scrollToBottom = () =>
-  {
-    ridesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const router = useRouter();
 
   const rides = [
     {
@@ -62,6 +58,14 @@ export default function RequestRide()
     },
   ];
 
+  const handleRoleChange = (role) =>
+  {
+    if (role === "rider")
+    {
+      router.push("/profile"); // redirects to profile page when rider is selected
+    }
+  };
+
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col">
       <GlobalNavbar />
@@ -76,7 +80,7 @@ export default function RequestRide()
           <h3 className="text-xl font-semibold">Your Dashboard</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             <div className="bg-[var(--card)] rounded-2xl shadow-soft p-6 flex flex-col">
-              <RoleSwitcher onScrollToBottom={scrollToBottom} />
+              <RoleSwitcher onRoleChange={handleRoleChange} />
             </div>
             <div className="bg-[var(--card)] rounded-2xl shadow-soft p-6 flex flex-col">
               <OverviewCard availableSeats={17} activeDrivers={6} />
@@ -84,7 +88,7 @@ export default function RequestRide()
           </div>
         </div>
 
-        <div ref={ridesSectionRef}>
+        <div>
           <AvailableRides rides={rides} />
         </div>
       </section>

@@ -1,39 +1,35 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Car, User } from "lucide-react";
 
 export default function RoleSwitcher({ activeRole = "rider", onRoleChange })
 {
   const [selected, setSelected] = useState(activeRole);
+  const router = useRouter();
 
   const handleSelect = (role) =>
   {
-    setSelected(role);
+    if (role === selected) return;
 
+    setSelected(role);
     if (typeof onRoleChange === "function")
     {
       onRoleChange(role);
     }
 
-    if (role === "driver")
-    {
-      const driverSection = document.getElementById("driver-form");
-      if (driverSection)
-      {
-        driverSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } else
-    {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    // Navigate based on selected role
+    const targetPath = role === "driver"
+      ? "/driver/offerrides"
+      : "/rider/request"; // adjust this according to your routes
+
+    router.push(targetPath);
   };
 
   return (
     <div className="flex flex-col gap-6 h-full">
-      {/* Heading */}
       <h4 className="text-lg font-semibold">Switch Role</h4>
 
-      {/* Role Cards */}
       <div className="grid grid-cols-2 gap-4">
         {/* Rider */}
         <button

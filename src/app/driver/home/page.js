@@ -5,15 +5,16 @@ import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RideCard from "@/app/components/RideCard";
 import OfferRideModal from "../offer/page";
-
+import { useRouter } from "next/navigation";
 export default function DriverDashboard()
 {
+  const router = useRouter();
+
   const [showOffer, setShowOffer] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [activeOffers, setActiveOffers] = useState([]);
   const [fullName, setFullName] = useState("User");
   const [department, setDepartment] = useState("Transport Department");
-
   useEffect(() =>
   {
     try
@@ -49,7 +50,6 @@ export default function DriverDashboard()
     },
   ];
 
-  // ✅ FIXED handleSuccess
   const handleSuccess = (form) =>
   {
     const newOffer = {
