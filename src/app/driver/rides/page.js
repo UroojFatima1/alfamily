@@ -11,20 +11,25 @@ import BaseModal from "@/app/components/BaseModal"; // ensure this exists
 
 export default function OfferRides()
 {
-  const [user, setUser] = useState(null);
+  const [fullName, setFullName] = useState("User");
+  const [department, setDepartment] = useState("IT Department");
+
   const [requests, setRequests] = useState([]);
   const [popup, setPopup] = useState(null);
 
   useEffect(() =>
   {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser)
+    try
     {
-      const parsed = JSON.parse(storedUser);
-      setUser(parsed.user || parsed);
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const userInfo = storedUser?.user || storedUser;
+      if (userInfo?.fullName) setFullName(userInfo.fullName);
+      if (userInfo?.department) setDepartment(userInfo.department);
+    } catch (err)
+    {
+      console.error("Error parsing user data:", err);
     }
 
-    // initial requests
     setRequests([
       {
         id: 1,
@@ -80,17 +85,7 @@ export default function OfferRides()
     else if (action === "finish") showPopup("Ride Completed 🎉");
   };
 
-  if (!user)
-  {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p>Loading Rides...</p>
-      </main>
-    );
-  }
 
-  const displayName =
-    user.fullname || user.name || user.username || user.firstName || "User";
 
   const demand = {
     totalRiders: 9,
@@ -116,7 +111,7 @@ export default function OfferRides()
       <section className="flex-1 px-6 py-8 space-y-8 max-w-6xl mx-auto w-full">
         {/* Welcome Header */}
         <div>
-          <h2 className="text-3xl font-bold">Welcome {displayName} 🚘</h2>
+          <h2 className="text-3xl font-bold">Welcome {fullName} 🚘</h2>
           <p className="text-[var(--muted)] mt-1">Ready for your next ride?</p>
         </div>
 

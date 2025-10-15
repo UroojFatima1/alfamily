@@ -1,5 +1,5 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import GlobalNavbar from "@/app/components/GlobalNavbar";
 import Footer from "@/app/components/Footer";
 import RoleSwitcher from "@/app/components/RoleSwitcher";
@@ -9,6 +9,23 @@ import { useRouter } from "next/navigation";
 
 export default function RequestRide()
 {
+  const [fullName, setFullName] = useState("User");
+  const [department, setDepartment] = useState("IT Department");
+
+  useEffect(() =>
+  {
+    try
+    {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const userInfo = storedUser?.user || storedUser;
+      if (userInfo?.fullName) setFullName(userInfo.fullName);
+      if (userInfo?.department) setDepartment(userInfo.department);
+    } catch (err)
+    {
+      console.error("Error parsing user data:", err);
+    }
+  }, []);
+
   const router = useRouter();
 
   const rides = [
@@ -75,7 +92,7 @@ export default function RequestRide()
 
       <section className="flex-1 px-6 py-8 space-y-10 max-w-6xl mx-auto w-full">
         <div>
-          <h2 className="text-3xl font-bold">Welcome Sarah 👋</h2>
+          <h2 className="text-3xl font-bold">Welcome {fullName} 👋</h2>
           <p className="text-[var(--muted)] mt-1">Ready for your next ride?</p>
         </div>
 
