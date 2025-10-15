@@ -82,7 +82,6 @@ export default function Profile({ user, initialRole = "rider" })
     }, 5000);
   };
 
-
   const switchToDriver = async (driverPayload) =>
   {
     setLoading(true);
@@ -121,7 +120,6 @@ export default function Profile({ user, initialRole = "rider" })
     }
   };
 
-  // Switch to Rider
   const switchToRider = async () =>
   {
     setLoading(true);
@@ -203,8 +201,8 @@ export default function Profile({ user, initialRole = "rider" })
           <p><span className="font-semibold">Model:</span> {driverData.model || "Toyota Corolla"}</p>
           <p><span className="font-semibold">Registration #:</span> {driverData.registrationNumber || "LEA-1234"}</p>
           <p><span className="font-semibold">Seating Capacity:</span> {driverData.seatingCapacity} Passengers</p>
-          <p><span className="font-semibold">AC:</span> Yes</p>
-          <p><span className="font-semibold">Ride Availability:</span> Yes</p>
+          <p><span className="font-semibold">AC:</span> {driverData.acAvailable ? "Yes" : "No"}</p>
+          <p><span className="font-semibold">Ride Availability:</span> {driverData.willingToOfferRide ? "Yes" : "No"}</p>
         </div>
       )}
 
@@ -257,13 +255,14 @@ export default function Profile({ user, initialRole = "rider" })
           </div>
         )}
 
-        {/* Driver Form */}
+        {/* ✅ Driver Form (with AC toggle + willing to offer) */}
         {showDriverForm && (
           <form
             onSubmit={handleSubmitDriverForm}
             className="mt-6 space-y-3 p-4 border rounded-lg bg-[var(--background)]"
           >
             <h4 className="font-semibold text-lg">Enter Driver Details 🚗</h4>
+
             <input
               type="text"
               placeholder="Model (e.g. Toyota Corolla)"
@@ -292,6 +291,51 @@ export default function Profile({ user, initialRole = "rider" })
               }
               required
             />
+
+            {/* ✅ AC Available toggle */}
+            <div className="input flex items-center justify-between mt-2">
+              <label className="font-medium">AC Available</label>
+              <input
+                type="checkbox"
+                checked={driverData.acAvailable}
+                onChange={(e) =>
+                  handleDriverChange("acAvailable", e.target.checked)
+                }
+                className="w-5 h-5 accent-[var(--accent)]"
+              />
+            </div>
+
+            {/* ✅ Willing to Offer Ride (Yes/No) */}
+            <div className="flex input items-center justify-between mt-2">
+              <label className="font-medium">Willing to Offer Ride</label>
+              <div className="flex gap-3">
+                <label>
+                  <input
+                    type="radio"
+                    name="willing"
+                    checked={driverData.willingToOfferRide === true}
+                    onChange={() =>
+                      handleDriverChange("willingToOfferRide", true)
+                    }
+                    className="accent-[var(--accent)]"
+                  />{" "}
+                  Yes
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="willing"
+                    checked={driverData.willingToOfferRide === false}
+                    onChange={() =>
+                      handleDriverChange("willingToOfferRide", false)
+                    }
+                    className="accent-[var(--accent)]"
+                  />{" "}
+                  No
+                </label>
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={loading}

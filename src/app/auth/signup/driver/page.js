@@ -1,18 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // ✅ for redirect
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import OtpModal from "@/app/components/OtpModal";
 
 export default function DriverSignup()
 {
+  const router = useRouter();
+
   const [showOtp, setShowOtp] = useState(false);
   const [apiMessage, setApiMessage] = useState({ type: "", text: "" });
   const [submitting, setSubmitting] = useState(false);
   const [userId, setUserId] = useState(null);
 
   const [form, setForm] = useState({
+    empid: "",
     fullName: "",
     email: "",
     mobile: "",
@@ -30,12 +34,14 @@ export default function DriverSignup()
 
   const [errors, setErrors] = useState({});
 
+  // Generic change handler
   const handleChange = (field, value) =>
   {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
+  // Format mobile
   const formatMobile = (value) =>
   {
     let cleaned = value.replace(/[^0-9]/g, "");
@@ -49,22 +55,22 @@ export default function DriverSignup()
       cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3, 6) + "-" + cleaned.slice(6);
     else if (cleaned.length > 10)
       cleaned = cleaned.slice(0, 3) + "-" + cleaned.slice(3, 6) + "-" + cleaned.slice(6, 13);
+
     return cleaned;
   };
 
-
+  // Format CNIC
   const formatCnic = (value) =>
   {
     let cleaned = value.replace(/[^0-9]/g, "");
     if (cleaned.length <= 5) return cleaned;
-    if (cleaned.length <= 12)
-      return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+    if (cleaned.length <= 12) return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
     if (cleaned.length <= 13)
       return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12)}`;
     return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12, 13)}`;
   };
 
-
+  // Validation
   const validate = () =>
   {
     let newErrors = {};
@@ -72,8 +78,14 @@ export default function DriverSignup()
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     const mobileRegex = /^\+92-\d{3}-\d{7}$/;
     const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+    const empidRegex = /^\d{5}$/;
 
     if (!form.fullName) newErrors.fullName = "Full name is required";
+
+    if (!form.empid) newErrors.empid = "Employee ID is required";
+    else if (!empidRegex.test(form.empid))
+      newErrors.empid = "Employee ID must be exactly 5 digits";
+
     if (!form.email) newErrors.email = "Email is required";
     else if (!emailRegex.test(form.email)) newErrors.email = "Invalid email format";
 
@@ -101,6 +113,7 @@ export default function DriverSignup()
     return newErrors;
   };
 
+  // Submit handler
   const handleSubmit = async (e) =>
   {
     e.preventDefault();
@@ -113,21 +126,22 @@ export default function DriverSignup()
     setSubmitting(true);
     try
     {
+      const { empid, ...rest } = form;
       const payload = {
         role: "driver",
-        fullName: form.fullName,
-        email: form.email,
-        mobile: form.mobile,
-        department: form.department,
-        designation: form.designation,
-        password: form.password,
-        cnic: form.cnic,
-        vehicleType: form.vehicleType,
-        model: form.model,
-        registrationNumber: form.registration,
-        seatingCapacity: Number(form.seating),
-        willingToOfferRide: form.offerRide === "yes",
-        acAvailable: form.acAvailable,
+        fullName: rest.fullName,
+        email: rest.email,
+        mobile: rest.mobile,
+        department: rest.department,
+        designation: rest.designation,
+        password: rest.password,
+        cnic: rest.cnic,
+        vehicleType: rest.vehicleType,
+        model: rest.model,
+        registrationNumber: rest.registration,
+        seatingCapacity: Number(rest.seating),
+        willingToOfferRide: rest.offerRide === "yes",
+        acAvailable: rest.acAvailable,
       };
 
       const res = await fetch("/api/auth/register", {
@@ -154,7 +168,7 @@ export default function DriverSignup()
     }
   };
 
-
+  // OTP verification
   const handleVerifyOtp = async (otp) =>
   {
     if (!userId) return;
@@ -171,8 +185,10 @@ export default function DriverSignup()
       setShowOtp(false);
       setApiMessage({
         type: "success",
-        text: "🎉 Registration successful! You can now log in.",
+        text: "🎉 Registration successful! Redirecting to login...",
       });
+
+      setTimeout(() => router.push("/"), 2000);
     } catch (err)
     {
       setApiMessage({ type: "error", text: "❌ " + err.message });
@@ -184,7 +200,7 @@ export default function DriverSignup()
       <Navbar />
 
       <section className="flex-1 flex items-center justify-center px-6 py-8">
-        <div className="w-full max-w-lg bg-[var(--card)] rounded-2xl shadow-soft flex flex-col h-full max-h-[85vh]">
+        <div className="w-full max-w-lg bg-[var(--card)] rounded-2xl shadow-soft flex flex-col h-auto max-h-[90vh] overflow-hidden">
           {/* Header */}
           <div className="p-6 border-b border-gray-700 text-center">
             <h2 className="text-2xl font-bold">Driver Registration 🚗</h2>
@@ -199,6 +215,7 @@ export default function DriverSignup()
             className="flex-1 overflow-y-auto px-6 py-4 space-y-4 custom-scrollbar"
           >
             {[
+              ["empid", "Employee ID (5 digits)", "text"],
               ["fullName", "Full Name", "text"],
               ["email", "Official Email", "email"],
               ["mobile", "Mobile Number (+92-XXX-XXXXXXX)", "tel"],
@@ -213,7 +230,7 @@ export default function DriverSignup()
                 <input
                   type={type}
                   placeholder={placeholder}
-                  className="input"
+                  className="input w-full"
                   value={form[key]}
                   onChange={(e) =>
                   {
@@ -223,9 +240,10 @@ export default function DriverSignup()
                       handleChange("cnic", formatCnic(e.target.value));
                     else handleChange(key, e.target.value);
                   }}
+                  maxLength={key === "empid" ? 5 : undefined}
                 />
                 {errors[key] && (
-                  <p className="text-red-500 text-sm">{errors[key]}</p>
+                  <p className="text-red-500 text-sm mt-1">{errors[key]}</p>
                 )}
               </div>
             ))}
@@ -233,7 +251,7 @@ export default function DriverSignup()
             {/* Department */}
             <div>
               <select
-                className="input appearance-none font-normal text-[var(--foreground)]"
+                className="input w-full"
                 value={form.department}
                 onChange={(e) => handleChange("department", e.target.value)}
               >
@@ -248,14 +266,14 @@ export default function DriverSignup()
                 <option value="Other">Other</option>
               </select>
               {errors.department && (
-                <p className="text-red-500 text-sm">{errors.department}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.department}</p>
               )}
             </div>
 
             {/* Vehicle Type */}
             <div>
               <select
-                className="input appearance-none font-normal text-[var(--foreground)]"
+                className="input w-full"
                 value={form.vehicleType}
                 onChange={(e) => handleChange("vehicleType", e.target.value)}
               >
@@ -267,7 +285,7 @@ export default function DriverSignup()
                 <option value="Van">Van</option>
               </select>
               {errors.vehicleType && (
-                <p className="text-red-500 text-sm">{errors.vehicleType}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.vehicleType}</p>
               )}
             </div>
 
@@ -284,7 +302,7 @@ export default function DriverSignup()
                     onClick={() => handleChange("offerRide", opt)}
                     className={`flex-1 py-2 rounded-lg border text-center transition ${form.offerRide === opt
                       ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                      : "border-gray-600 hover:border-[var(--accent)] text-[var(--foreground)]"
+                      : "border-gray-600 hover:border-[var(--accent)]"
                       }`}
                   >
                     {opt === "yes" ? "Yes" : "No"}
@@ -292,7 +310,7 @@ export default function DriverSignup()
                 ))}
               </div>
               {errors.offerRide && (
-                <p className="text-red-500 text-sm">{errors.offerRide}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.offerRide}</p>
               )}
             </div>
 

@@ -18,10 +18,10 @@ export default function RoleSwitcher({ activeRole = "rider", onRoleChange })
       onRoleChange(role);
     }
 
-    // Navigate based on selected role
+
     const targetPath = role === "driver"
-      ? "/driver/offerrides"
-      : "/rider/request"; // adjust this according to your routes
+      ? "/driver/profile"
+      : "/rider/profile#bottom";
 
     router.push(targetPath);
   };

@@ -22,6 +22,7 @@ export default function RequestRide()
       location: "123 Main Street, Downtown",
       time: "Today, 8:30 AM",
       seatsLeft: 1,
+      price: 5000
     },
     {
       id: 2,
@@ -33,6 +34,7 @@ export default function RequestRide()
       location: "456 Business Ave, Office",
       time: "Today, 9:00 AM",
       seatsLeft: 0,
+      price: 2000
     },
     {
       id: 3,
@@ -44,6 +46,7 @@ export default function RequestRide()
       location: "789 Tech Park, Silicon Valley",
       time: "Today, 10:15 AM",
       seatsLeft: 3,
+      price: 700
     },
     {
       id: 4,
@@ -62,7 +65,7 @@ export default function RequestRide()
   {
     if (role === "rider")
     {
-      router.push("/profile"); // redirects to profile page when rider is selected
+      router.push("rider/profile#bottom");
     }
   };
 

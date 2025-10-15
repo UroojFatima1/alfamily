@@ -24,7 +24,6 @@ async function getAddress(lat, lon)
   }
 }
 
-// Click listener for map
 function LocationPicker({ type, setForm })
 {
   const { useMapEvents } = require("react-leaflet");
@@ -52,6 +51,7 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
     pickupCoords: null,
     dropCoords: null,
     seats: "",
+    price: "",
     date: "",
     time: "",
     notes: "",
@@ -110,6 +110,7 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
     if (!form.seats || Number(form.seats) <= 0) newErrors.seats = "Seats must be at least 1";
     if (!form.date) newErrors.date = "Date is required";
     if (!form.time) newErrors.time = "Time is required";
+    if (!form.price || Number(form.price) <= 0) newErrors.price = "Price must be valid";
     return newErrors;
   };
 
@@ -120,9 +121,11 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
 
-    console.log("Offer Ride Submitted:", form);
+    const { price, ...formDataToSend } = form;
+
+    console.log("Offer Ride Submitted:", formDataToSend);
     onClose();
-    if (onSuccess) onSuccess(form);
+    if (onSuccess) onSuccess(formDataToSend);
   };
 
   if (!isOpen) return null;
@@ -132,6 +135,7 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
       <h2 className="text-xl font-bold mb-4 text-center">Offer a Ride 🚗</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+
         {/* Pickup Type */}
         <div className="grid grid-cols-2 gap-0 rounded-lg overflow-hidden border border-gray-600">
           <button
@@ -212,25 +216,24 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
 
         {/* Map Picker */}
         <div className="bg-[var(--card)] p-2 rounded-lg shadow-md">
-          <div className="flex justify-between mb-2">
-            <p className="text-sm text-gray-400">Click map to set {selectedMap} location</p>
+          <div className="flex justify-between mb-2 items-center">
+            <p className="text-sm text-gray-400">
+              Click map to set {selectedMap} location
+            </p>
             <div className="space-x-2">
-              <button
-                type="button"
-                onClick={() => setSelectedMap("pickup")}
-                className={`px-2 py-1 text-xs rounded ${selectedMap === "pickup" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"
-                  }`}
-              >
-                Pickup
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedMap("drop")}
-                className={`px-2 py-1 text-xs rounded ${selectedMap === "drop" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"
-                  }`}
-              >
-                Drop
-              </button>
+              {["pickup", "drop"].map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setSelectedMap(type)}
+                  className={`px-2 py-1 text-xs rounded ${selectedMap === type
+                    ? "bg-yellow-400 text-black"
+                    : "bg-gray-700 text-white"
+                    }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -255,7 +258,7 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
           </MapContainer>
         </div>
 
-        {/* Seats, Date, Time, etc */}
+        {/* Date + Time */}
         <div className="flex gap-3">
           <div className="flex-1">
             <input type="date" min={today} value={form.date} onChange={(e) => handleChange("date", e.target.value)} className="input" />
@@ -267,16 +270,33 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
           </div>
         </div>
 
-        <input
-          type="number"
-          min="1"
-          placeholder="Available Seats"
-          value={form.seats}
-          onChange={(e) => handleChange("seats", e.target.value)}
-          className="input"
-        />
-        {errors.seats && <p className="text-red-500 text-sm">{errors.seats}</p>}
+        {/* Seats + Price */}
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <input
+              type="number"
+              min="1"
+              placeholder="Available Seats"
+              value={form.seats}
+              onChange={(e) => handleChange("seats", e.target.value)}
+              className="input"
+            />
+            {errors.seats && <p className="text-red-500 text-sm">{errors.seats}</p>}
+          </div>
+          <div className="flex-1">
+            <input
+              type="number"
+              min="1"
+              placeholder="Price (PKR)"
+              value={form.price}
+              onChange={(e) => handleChange("price", e.target.value)}
+              className="input"
+            />
+            {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
+          </div>
+        </div>
 
+        {/* Notes */}
         <textarea
           placeholder="Notes (Optional)"
           value={form.notes}
@@ -285,30 +305,28 @@ export default function OfferRideModal({ isOpen, onClose, onSuccess })
           rows="3"
         />
 
+        {/* AC Option */}
         <div className="flex gap-4">
-          <label className="flex items-center gap-2 border border-gray-600 rounded-lg px-4 py-2 cursor-pointer">
-            <input
-              type="radio"
-              name="ac"
-              value="yes"
-              checked={form.ac === "yes"}
-              onChange={(e) => handleChange("ac", e.target.value)}
-            />
-            AC
-          </label>
-          <label className="flex items-center gap-2 border border-gray-600 rounded-lg px-4 py-2 cursor-pointer">
-            <input
-              type="radio"
-              name="ac"
-              value="no"
-              checked={form.ac === "no"}
-              onChange={(e) => handleChange("ac", e.target.value)}
-            />
-            Non AC
-          </label>
+          {["yes", "no"].map(option => (
+            <label
+              key={option}
+              className="flex items-center gap-2 border border-gray-600 rounded-lg px-4 py-2 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="ac"
+                value={option}
+                checked={form.ac === option}
+                onChange={(e) => handleChange("ac", e.target.value)}
+              />
+              {option === "yes" ? "AC" : "Non AC"}
+            </label>
+          ))}
         </div>
 
-        <button type="submit" className="btn-primary w-full">Submit Offer</button>
+        <button type="submit" className="btn-primary w-full">
+          Submit Offer
+        </button>
       </form>
     </BaseModal>
   );

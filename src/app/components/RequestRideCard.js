@@ -12,6 +12,7 @@ export default function RequestRideCard({
   location,
   time,
   seatsLeft,
+  price, // ✅ new prop
 })
 {
   const [loading, setLoading] = useState(false);
@@ -41,7 +42,7 @@ export default function RequestRideCard({
           className="rounded-full"
         />
         <div>
-          <h4 className="font-semibold">{name}</h4>
+          <h4 className="font-semibold text-base">{name}</h4>
           <p className="text-sm text-[var(--muted)]">
             ⭐ {rating} ({totalRides} rides)
           </p>
@@ -52,6 +53,14 @@ export default function RequestRideCard({
       <div className="bg-gray-800/40 rounded-lg px-4 py-2 text-sm">
         <p className="font-medium">{vehicle}</p>
         <p className="text-[var(--muted)]">{details}</p>
+      </div>
+
+      {/* ✅ Price Tag (synchronized style) */}
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-[var(--muted)]">💰 Fare</span>
+        <span className="font-medium text-[var(--text)]">
+          {price ? `PKR ${price}` : "Not available"}
+        </span>
       </div>
 
       {/* Location & Time */}
